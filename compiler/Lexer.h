@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <iostream>
 #include <string>
@@ -6,59 +6,15 @@
 #include <algorithm>
 
 #include "Token.h"
-
-#define ERROR -1
-
-#define IDENFR	0	// ±êÊ¶·û
-#define INTCON	1	// ÕûÐÎ³£Á¿
-#define CHARCON	2	// ×Ö·û³£Á¿
-#define STRCON	3	// ×Ö·û´®
-
-// reserved words
-#define CONSTTK	4	// const
-#define INTTK	5	// int
-#define CHARTK	6	// char
-#define VOIDTK	7	// void
-#define MAINTK	8	// main
-#define IFTK	9	// if
-#define ELSETK	10	// else
-#define SWITCHTK	11	// switch
-#define CASETK	12	// case
-#define DEFAULTTK	13	// default
-#define WHILETK	14	// while
-#define FORTK	15	// for
-#define SCANFTK	16	// scanf
-#define PRINTFTK	17	// printf
-#define RETURNTK	18	// return
-
-#define PLUS	19	// +
-#define MINU	20	// -
-#define MULT	21	// *
-#define DIV		22	// /
-#define LSS		23	// <
-#define LEQ		24	// <=
-#define GRE		25	// >
-#define GEQ		26	// >=
-#define EQL		27	// ==
-#define NEQ		28	// !=
-#define COLON	29	// :
-#define ASSIGN	30	// =
-#define SEMICN	31	// ;
-#define COMMA	32	// ,
-#define LPARENT	33	// (
-#define RPARENT	34	// )
-#define LBRACK	35	// [
-#define RBRACK	36	// ]
-#define LBRACE	37	// {
-#define RBRACE	38	// }
-#define EOFSYM	39	// EOF
+#include "type.h"
 
 using namespace std;
 
-
-extern vector<Token> tokenList;
 extern string type_code[];
 extern string reserved_words[];
+
+extern vector<Token> tokenList;
+extern int tokenptr;
 
 class Lexer
 {

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <string>
 #include <fstream>
@@ -12,6 +12,8 @@ public:
 	bool isType(int symbol);
 	void setValue(int value);
 	void printToken();
+	int getType();
+	string getTokenStr();
 private:
 	int symbol;
 	string tokenStr;

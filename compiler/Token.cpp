@@ -1,4 +1,4 @@
-#include "Token.h"
+﻿#include "Token.h"
 
 using namespace std;
 
@@ -21,4 +21,12 @@ void Token::setValue(int value) {
 
 void Token::printToken() {
 	outfile << type_code[this->symbol] << " " << this->tokenStr.c_str() << endl;
+}
+
+int Token::getType() {
+	return symbol;
+}
+
+string Token::getTokenStr() {
+	return tokenStr;
 }

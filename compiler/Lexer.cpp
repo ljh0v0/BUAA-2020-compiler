@@ -1,4 +1,4 @@
-#include "Lexer.h"
+ï»¿#include "Lexer.h"
 
 using namespace std;
 
@@ -13,13 +13,13 @@ string reserved_words[] = { "const", "int", "char", "void", "main", "if", "else"
 							"for", "scanf", "printf", "return" };
 
 vector<Token> tokenList;
+int tokenptr;
 
 Lexer::Lexer() {
 	this->tokenbuf.clear();
 	this->linenumber = 1;
 	this->number = 0;
 	this->symbol = -1;
-	this->ch = NULL;
 }
 
 void Lexer::clearToken() {
@@ -246,15 +246,17 @@ void Lexer::lexicalAnalyse() {
 	{
 		getsym();
 		if (symbol == EOFSYM) {
+			Token token(symbol, tokenbuf, linenumber);
+			tokenList.push_back(token);
 			break;
 		}
 		else if (symbol == ERROR) {
-			/// TODO: ´íÎó´¦Àí£ºÎ´Ê¶±ðµÄ·ûºÅ
-			cout << "Lexer: Î´Ê¶±ðµÄ·ûºÅ" << endl;
+			/// TODO: é”™è¯¯å¤„ç†ï¼šæœªè¯†åˆ«çš„ç¬¦å·
+			cout << "Lexer: æœªè¯†åˆ«çš„ç¬¦å·" << endl;
 		}
 		else {
 			Token token(symbol, tokenbuf, linenumber);
-			token.printToken();
+			// token.printToken();
 			tokenList.push_back(token);
 		}
 	}
