@@ -3,7 +3,7 @@ char c(){
 	if(1 == 1){
 		return(c()+c());
 	}
-	return (c()*c());
+	return(c()*c());
 }
 void main(){
 	c(a);

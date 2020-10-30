@@ -29,6 +29,6 @@ int main() {
 	lexer.lexicalAnalyse();
 	parser.initial();
 	parser.procedure();
-	//parser.getRoot().print();
+	parser.getRoot().print();
 	return 0;
 }

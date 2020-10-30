@@ -33,37 +33,25 @@ bool Parser::checkToken(int type, string name, AST_node* nodeptr) {
 
 FIRST CONSTTK INTTK CHARTK INTTK CHARTK常量说明 VOIDTK VOIDTK
 */
-bool Parser::procedure() {
+void Parser::procedure() {
 	AST_node node("<程序>", true);
 	if (curToken->isType(CONSTTK)) {
-		if (!constDeclare()) {
-			cout << "语法分析<程序>: 常量分析错误" << endl;
-			return false;
-		}
+		constDeclare();
 		node.addNode(subNode);
 	}
 	if ((TOKEN_PEEK(0).isType(INTTK) || TOKEN_PEEK(0).isType(CHARTK))
 		&& TOKEN_PEEK(1).isType(IDENFR) && !TOKEN_PEEK(2).isType(LPARENT)) {
-		if (!varDeclare()) {
-			cout << "语法分析<程序>: 变量分析错误" << endl;
-			return false;
-		}
+		varDeclare();
 		node.addNode(subNode);
 	}
 	while (true)
 	{
 		if (TOKEN_PEEK(0).isType(INTTK) || TOKEN_PEEK(0).isType(CHARTK)) {
-			if (!funcWithReturn()) {
-				cout << "语法分析<程序>: 有返回值的函数错误" << endl;
-				return false;
-			}
+			funcWithReturn();
 			node.addNode(subNode);
 		}
 		else if (TOKEN_PEEK(0).isType(VOIDTK) && TOKEN_PEEK(1).isType(IDENFR)) {
-			if (!funcNoReturn()) {
-				cout << "语法分析<程序>: 无返回值的函数错误" << endl;
-				return false;
-			}
+			funcNoReturn();
 			node.addNode(subNode);
 		}
 		else
@@ -71,14 +59,10 @@ bool Parser::procedure() {
 			break;
 		}
 	}
-	if (!mainFunc()) {
-		cout << "语法分析<程序>: 主函数错误" << endl;
-		return false;
-	}
+	mainFunc();
 	node.addNode(subNode);
 	subNode = node;
 	root = node;
-	return true;
 }
 
 /*
@@ -122,7 +106,7 @@ bool Parser::unsignedInt() {
 <整数>	::= ［[PLUS]|[MINE]］<无符号整数>
 FIRST PLUS MINU INTCON
 */
-bool Parser::integer() {
+void Parser::integer() {
 	AST_node node("<整数>", true);
 	int negative = false;
 	if (curToken->isType(PLUS) || curToken->isType(MINU)) {
@@ -132,15 +116,11 @@ bool Parser::integer() {
 		ADD_TOKENNODE("<加法运算符>", curToken, node);
 		curToken = &TOKEN_GET;
 	}
-	if (!unsignedInt()) {
-		cout << "语法分析<无符号整数>: 不是整数" << endl;
-		return false;
-	}
+	unsignedInt();
 	node.addNode(subNode);
 	int num = negative ? -subNode.getNum() : subNode.getNum();
 	node.setNum(num);
 	subNode = node;
-	return true;
 }
 
 /*
@@ -149,14 +129,13 @@ bool Parser::integer() {
 				|[CHARTK]<标识符>[ASSIGN]<字符> {[COMMA]<标识符>[ASSIGN]<字符>}
 FIRST CONSTTK
 */
-bool Parser::constDef() {
+void Parser::constDef() {
 	AST_node node("<常量定义>", true);
 	STE ste;
 	ste.identType = IdentType::CONST;
 
 	if (!curToken->isType(INTTK) && !curToken->isType(CHARTK)) {
 		cout << "语法分析<常量定义>: 缺少类型标识符" << endl;
-		return false;
 	}
 	int const_type = curToken->getType();
 	ste.valueType = curToken->isType(INTTK) ? ValueType::INTEGER : ValueType::CHAR;
@@ -164,21 +143,12 @@ bool Parser::constDef() {
 	curToken = &TOKEN_GET;
 
 	ste.name = curToken->getTokenStr();
-	if (!checkToken(IDENFR, "<标识符>", &node)) {
-		cout << "语法分析<常量定义>: 缺少标识符" << endl;
-		return false;
-	}
+	checkToken(IDENFR, "<标识符>", &node);
 
-	if (!checkToken(ASSIGN, "<赋值符号>", &node)) {
-		cout << "语法分析<常量定义>: 缺少赋值符号" << endl;
-		return false;
-	}
+	checkToken(ASSIGN, "<ASSIGN>", &node);
 
 	if (const_type == INTTK && (curToken->isType(INTCON) || curToken->isType(PLUS) || curToken->isType(MINU))) {
-		if (!integer()) {
-			cout << "语法分析<常量定义>: 整数赋值错误" << endl;
-			return false;
-		}
+		integer();
 		ste.value = subNode.getNum();
 		node.addNode(subNode);
 	}
@@ -189,7 +159,6 @@ bool Parser::constDef() {
 	}
 	else {
 		cout << "语法分析<常量定义>: 常量定义类型不一致" << endl;
-		return false;
 	}
 	// 填表
 	if (!symbolTableManager.insert(ste)) {
@@ -202,21 +171,12 @@ bool Parser::constDef() {
 		curToken = &TOKEN_GET;
 
 		ste.name = curToken->getTokenStr();
-		if (!checkToken(IDENFR, "<标识符>", &node)) {
-			cout << "语法分析<常量定义>: 缺少标识符" << endl;
-			return false;
-		}
+		checkToken(IDENFR, "<标识符>", &node);
 
-		if (!checkToken(ASSIGN, "<赋值符号>", &node)) {
-			cout << "语法分析<常量定义>: 缺少赋值符号" << endl;
-			return false;
-		}
+		checkToken(ASSIGN, "<赋值符号>", &node);
 
 		if (const_type == INTTK && (curToken->isType(INTCON) || curToken->isType(PLUS) || curToken->isType(MINU))) {
-			if (!integer()) {
-				cout << "语法分析<常量定义>: 整数赋值错误" << endl;
-				return false;
-			}
+			integer();
 			ste.value = subNode.getNum();
 			node.addNode(subNode);
 		}
@@ -227,7 +187,6 @@ bool Parser::constDef() {
 		}
 		else {
 			cout << "语法分析<常量定义>: 常量定义类型不一致" << endl;
-			return false;
 		}
 		// 填表
 		if (!symbolTableManager.insert(ste)) {
@@ -236,25 +195,18 @@ bool Parser::constDef() {
 		}
 	}
 	subNode = node;
-	return true;
 }
 
 /*
 <常量说明>	::=  const<常量定义>;{ const<常量定义>;}
 <常量说明>	::=  [CONSTTK] <常量定义> [SEMICN ] {[CONSTTK]<常量定义>[SEMICN]}
 */
-bool Parser::constDeclare() {
+void Parser::constDeclare() {
 	AST_node node("<常量说明>", true);
 
-	if (!checkToken(CONSTTK, "<CONST>", &node)) {
-		cout << "语法分析<常量说明>: 缺少const" << endl;
-		return false;
-	}
+	checkToken(CONSTTK, "<CONST>", &node);
 
-	if (!constDef()) {
-		cout << "语法分析<常量说明>: 缺少常量定义" << endl;
-		return false;
-	}
+	constDef();
 	node.addNode(subNode);
 
 	if (curToken->isType(SEMICN))
@@ -266,10 +218,7 @@ bool Parser::constDeclare() {
 		ADD_TOKENNODE("<CONST>", curToken, node);
 		curToken = &TOKEN_GET;
 
-		if (!constDef()) {
-			cout << "语法分析<常量说明>: 缺少常量定义" << endl;
-			return false;
-		}
+		constDef();
 		node.addNode(subNode);
 
 		if (curToken->isType(SEMICN))
@@ -278,7 +227,6 @@ bool Parser::constDeclare() {
 			errorHandler.printError(MISSING_SEMICN, TOKEN_PEEK(-1).getLinenum());
 	}
 	subNode = node;
-	return true;
 }
 
 /*
@@ -286,12 +234,11 @@ bool Parser::constDeclare() {
 <声明头部>   ::=  [INTTK]<标识符> | [CHARTK]<标识符>
 FIRST INTTK CHARTK
 */
-bool Parser::declareHead(STE* ste) {
+void Parser::declareHead(STE* ste) {
 	AST_node node("<声明头部>", true);
 
 	if (!curToken->isType(INTTK) && !curToken->isType(CHARTK)) {
 		cout << "语法分析<声明头部>: 缺少类型标识符" << endl;
-		return false;
 	}
 	ste->valueType = curToken->isType(INTTK) ? ValueType::INTEGER : ValueType::CHAR;
 	ADD_TOKENNODE("<类型标识符>", curToken, node);
@@ -304,11 +251,9 @@ bool Parser::declareHead(STE* ste) {
 	}
 	else {
 		cout << "语法分析<声明头部>: 缺少标识符" << endl;
-		return false;
 	}
 
 	subNode = node;
-	return true;
 }
 
 /*
@@ -316,21 +261,17 @@ bool Parser::declareHead(STE* ste) {
 <常量>   ::=  <整数>|<字符>
 FIRST PLUS MINU INTCON CHARCON
 */
-bool Parser::constant() {
+void Parser::constant() {
 	AST_node node("<常量>", true);
 	if (curToken->isType(CHARCON)) {
 		ADD_TOKENNODE("<字符>", curToken, node);
 		curToken = &TOKEN_GET;
 	}
 	else {
-		if (!integer()) {
-			cout << "语法分析<常量>: 未识别的常量" << endl;
-			return false;
-		}
+		integer();
 		node.addNode(subNode);
 	}
 	subNode = node;
-	return true;
 }
 
 /*
@@ -338,13 +279,10 @@ bool Parser::constant() {
 <变量说明>  ::= <变量定义>[SEMICN] {<变量定义>[SEMICN]}
 FIRST INTTK CHARTK
 */
-bool Parser::varDeclare() {
+void Parser::varDeclare() {
 	AST_node node("<变量说明>", true);
 
-	if (!varDef()) {
-		cout << "语法分析<变量说明>: 变量定义错误" << endl;
-		return false;
-	}
+	varDef();
 	node.addNode(subNode);
 
 	if (curToken->isType(SEMICN))
@@ -354,10 +292,7 @@ bool Parser::varDeclare() {
 
 	while ((TOKEN_PEEK(0).isType(INTTK) || TOKEN_PEEK(0).isType(CHARTK))
 		&& TOKEN_PEEK(1).isType(IDENFR) && !TOKEN_PEEK(2).isType(LPARENT)) {
-		if (!varDef()) {
-			cout << "语法分析<变量说明>: 变量定义错误" << endl;
-			return false;
-		}
+		varDef();
 		node.addNode(subNode);
 
 		if (curToken->isType(SEMICN))
@@ -366,7 +301,6 @@ bool Parser::varDeclare() {
 			errorHandler.printError(MISSING_SEMICN, TOKEN_PEEK(-1).getLinenum());
 	}
 	subNode = node;
-	return true;
 }
 
 /*
@@ -374,7 +308,7 @@ bool Parser::varDeclare() {
 <变量定义>	::= <变量定义无初始化> | <变量定义及初始化>
 FIRST INTTK CHARTK
 */
-bool Parser::varDef() {
+void Parser::varDef() {
 	AST_node node("<变量定义>", true);
 	bool withInitial = false;
 	if ((TOKEN_PEEK(0).isType(INTTK) || TOKEN_PEEK(0).isType(CHARTK)) 
@@ -388,26 +322,18 @@ bool Parser::varDef() {
 			i++;
 		}
 		if (withInitial) {
-			if (!varDefWithInitial()) {
-				cout << "语法分析<变量定义>: 变量定义及初始化错误" << endl;
-				return false;
-			}
+			varDefWithInitial();
 			node.addNode(subNode);
 		}
 		else {
-			if (!varDefNoInitial()) {
-				cout << "语法分析<变量定义>: 变量定义无初始化错误" << endl;
-				return false;
-			}
+			varDefNoInitial();
 			node.addNode(subNode);
 		}
 	}
 	else {
 		cout << "语法分析<变量定义>: 变量定义错误" << endl;
-		return false;
 	}
 	subNode = node;
-	return true;
 }
 
 /*
@@ -417,34 +343,27 @@ bool Parser::varDef() {
 						( <空> |(LBRACK]<无符号整数>[RBRACK](< 空> | [LBRACK]<无符号整数>[RBRACK])))
 						{[COMMA]<标识符>(<空> |([LBRACK]<无符号整数>([RBRACK] |[RBRACK][LBRACK]<无符号整数>[RBRACK])))}
 */
-bool Parser::varDefNoInitial() {
+void Parser::varDefNoInitial() {
 	AST_node node("<变量定义无初始化>", true);
 	STE ste;
 	ste.identType = IdentType::VAR;
 
 	if (!curToken->isType(INTTK) && !curToken->isType(CHARTK)) {
 		cout << "语法分析<变量定义无初始化>: 缺少类型标识符" << endl;
-		return false;
 	}
 	ste.valueType = curToken->isType(INTTK) ? ValueType::INTEGER : ValueType::CHAR;
 	ADD_TOKENNODE("<类型标识符>", curToken, node);
 	curToken = &TOKEN_GET;
 
 	ste.name = curToken->getTokenStr();
-	if (!checkToken(IDENFR, "<标识符>", &node)) {
-		cout << "语法分析<变量定义无初始化>: 缺少标识符" << endl;
-		return false;
-	}
+	checkToken(IDENFR, "<标识符>", &node);
 
 	if (curToken->isType(LBRACK)) {
 		checkToken(LBRACK, "<LBRACK>", &node);
 		ste.identType = IdentType::ARRAY;
 		ste.arrayInfo.array_dim = 1;
 
-		if (!unsignedInt()) {
-			cout << "语法分析<变量定义无初始化>: 数组定义缺少维度" << endl;
-			return false;
-		}
+		unsignedInt();
 		ste.arrayInfo.array_col = subNode.getNum();
 		node.addNode(subNode);
 
@@ -457,10 +376,7 @@ bool Parser::varDefNoInitial() {
 			checkToken(LBRACK, "<LBRACK>", &node);
 			ste.arrayInfo.array_dim = 2;
 
-			if (!unsignedInt()) {
-				cout << "语法分析<变量定义无初始化>: 数组定义缺少维度" << endl;
-				return false;
-			}
+			unsignedInt();
 			ste.arrayInfo.array_row = ste.arrayInfo.array_col;
 			ste.arrayInfo.array_col = subNode.getNum();
 			node.addNode(subNode);
@@ -483,20 +399,14 @@ bool Parser::varDefNoInitial() {
 		ste.identType = IdentType::VAR;
 
 		ste.name = curToken->getTokenStr();
-		if (!checkToken(IDENFR, "<标识符>", &node)) {
-			cout << "语法分析<变量定义无初始化>: 缺少标识符" << endl;
-			return false;
-		}
+		checkToken(IDENFR, "<标识符>", &node);
 
 		if (curToken->isType(LBRACK)) {
 			checkToken(LBRACK, "<LBRACK>", &node);
 			ste.identType = IdentType::ARRAY;
 			ste.arrayInfo.array_dim = 1;
 
-			if (!unsignedInt()) {
-				cout << "语法分析<变量定义无初始化>: 数组定义缺少维度" << endl;
-				return false;
-			}
+			unsignedInt();
 			ste.arrayInfo.array_col = subNode.getNum();
 			node.addNode(subNode);
 
@@ -509,10 +419,7 @@ bool Parser::varDefNoInitial() {
 				checkToken(LBRACK, "<LBRACK>", &node);
 				ste.arrayInfo.array_dim = 2;
 
-				if (!unsignedInt()) {
-					cout << "语法分析<变量定义无初始化>: 数组定义缺少维度" << endl;
-					return false;
-				}
+				unsignedInt();
 				ste.arrayInfo.array_row = ste.arrayInfo.array_col;
 				ste.arrayInfo.array_col = subNode.getNum();
 				node.addNode(subNode);
@@ -531,7 +438,6 @@ bool Parser::varDefNoInitial() {
 	}
 
 	subNode = node;
-	return true;
 }
 
 /*
@@ -543,7 +449,7 @@ bool Parser::varDefNoInitial() {
 						|[LBRACK]<无符号整数>[RBRACK][ASSIGN][LBRACE][LBRACE]
 						<常量> {[COMMA]<常量>}[RBRACE]{[COMMA] [LBRACE]<常量>{[COMMA]<常量>}[RBRACE]}[RBRACE]))
 */
-bool Parser::varDefWithInitial() {
+void Parser::varDefWithInitial() {
 	int col_count = 0, row_count = 0;
 	bool num_unmatch = false;
 	bool type_unmatch = false;
@@ -552,15 +458,15 @@ bool Parser::varDefWithInitial() {
 	ste.identType = IdentType::VAR;
 
 	if (!curToken->isType(INTTK) && !curToken->isType(CHARTK)) {
-		return false;
+		cout << "语法分析<变量定义及初始化>: 缺少类型标识符" << endl;
 	}
 	ste.valueType = curToken->isType(INTTK) ? ValueType::INTEGER : ValueType::CHAR;
 	ADD_TOKENNODE("<类型标识符>", curToken, node);
 	curToken = &TOKEN_GET;
 
-	ste.name = curToken->getTokenStr();
-	if (!checkToken(IDENFR, "<标识符>", &node)) {
-		return false;
+	if (curToken->isType(IDENFR)) {
+		ste.name = curToken->getTokenStr();
+		checkToken(IDENFR, "<标识符>", &node);
 	}
 
 	if (curToken->isType(ASSIGN)) {
@@ -569,9 +475,7 @@ bool Parser::varDefWithInitial() {
 		if ((ste.valueType == ValueType::CHAR && !curToken->isType(CHARCON))
 			|| (ste.valueType == ValueType::INTEGER && curToken->isType(CHARCON)))
 			type_unmatch = true;
-		if (!constant()) {
-			return false;
-		}
+		constant();
 		node.addNode(subNode);
 	}
 	else if (curToken->isType(LBRACK)) {
@@ -580,9 +484,7 @@ bool Parser::varDefWithInitial() {
 		ste.arrayInfo.array_dim = 1;
 
 
-		if (!unsignedInt()) {
-			return false;
-		}
+		unsignedInt();
 		ste.arrayInfo.array_col = subNode.getNum();
 		node.addNode(subNode);
 		
@@ -596,14 +498,12 @@ bool Parser::varDefWithInitial() {
 			checkToken(ASSIGN, "ASSIGN", &node);
 
 			if (!checkToken(LBRACE, "<LBRACE>", &node)) {
-				return false;
+				cout << "语法分析<变量定义及初始化>: 缺少左大括号" << endl;
 			}
 			if ((ste.valueType == ValueType::CHAR && !curToken->isType(CHARCON))
 				|| (ste.valueType == ValueType::INTEGER && curToken->isType(CHARCON)))
 				type_unmatch = true;
-			if (!constant()) {
-				return false;
-			}
+			constant();
 			node.addNode(subNode);
 			col_count++;
 			while (curToken->isType(COMMA)) {
@@ -611,15 +511,11 @@ bool Parser::varDefWithInitial() {
 				if ((ste.valueType == ValueType::CHAR && !curToken->isType(CHARCON))
 					|| (ste.valueType == ValueType::INTEGER && curToken->isType(CHARCON)))
 					type_unmatch = true;
-				if (!constant()) {
-					return false;
-				}
+				constant();
 				node.addNode(subNode);
 				col_count++;
 			}
-			if (!checkToken(RBRACE, "<RBRACE>", &node)) {
-				return false;
-			}
+			checkToken(RBRACE, "<RBRACE>", &node);
 			if (col_count != ste.arrayInfo.array_col) {
 				num_unmatch = true;
 			}
@@ -628,9 +524,7 @@ bool Parser::varDefWithInitial() {
 			checkToken(LBRACK, "<LBRACK>", &node);
 			ste.arrayInfo.array_dim = 2;
 
-			if (!unsignedInt()) {
-				return false;
-			}
+			unsignedInt();
 			ste.arrayInfo.array_row = ste.arrayInfo.array_col;
 			ste.arrayInfo.array_col = subNode.getNum();
 			node.addNode(subNode);
@@ -640,31 +534,28 @@ bool Parser::varDefWithInitial() {
 			else
 				errorHandler.printError(MISSING_RBRACK, TOKEN_PEEK(-1).getLinenum());
 			
-			if (!checkToken(ASSIGN, "<ASSING>", &node) || !checkToken(LBRACE, "<LBRACE>", &node) 
-				|| !checkToken(LBRACE, "<LBRACE>", &node)) {
-				return false;
-			}
+			checkToken(ASSIGN, "<ASSING>", &node);
+			checkToken(LBRACE, "<LBRACE>", &node);
+			checkToken(LBRACE, "<LBRACE>", &node);
+
 			if ((ste.valueType == ValueType::CHAR && !curToken->isType(CHARCON))
 				|| (ste.valueType == ValueType::INTEGER && curToken->isType(CHARCON)))
 				type_unmatch = true;
-			if (!constant()) {
-				return false;
-			}
+			constant();
 			node.addNode(subNode);
 			col_count++;
+
 			while (curToken->isType(COMMA)) {
 				checkToken(COMMA, "<COMMA>", &node);
 				if ((ste.valueType == ValueType::CHAR && !curToken->isType(CHARCON))
 					|| (ste.valueType == ValueType::INTEGER && curToken->isType(CHARCON)))
 					type_unmatch = true;
-				if (!constant()) {
-					return false;
-				}
+				constant();
 				node.addNode(subNode);
 				col_count++;
 			}
 			if (!checkToken(RBRACE, "<RBRACE>", &node)) {
-				return false;
+				cout << "语法分析<变量定义及初始化>: 缺少左大括号" << endl;
 			}
 			if (col_count != ste.arrayInfo.array_col) {
 				num_unmatch = true;
@@ -672,47 +563,39 @@ bool Parser::varDefWithInitial() {
 			row_count++;
 			while (curToken->isType(COMMA)) {
 				checkToken(COMMA, "<COMMA>", &node);
-				if (!checkToken(LBRACE, "<LBRACE>", &node)) {
-					return false;
-				}
+				checkToken(LBRACE, "<LBRACE>", &node);
 				col_count = 0;
+
 				if ((ste.valueType == ValueType::CHAR && !curToken->isType(CHARCON))
 					|| (ste.valueType == ValueType::INTEGER && curToken->isType(CHARCON)))
 					type_unmatch = true;
-				if (!constant()) {
-					return false;
-				}
+				constant();
 				node.addNode(subNode);
 				col_count++;
+
 				while (curToken->isType(COMMA)) {
 					checkToken(COMMA, "<COMMA>", &node);
 					if ((ste.valueType == ValueType::CHAR && !curToken->isType(CHARCON))
 						|| (ste.valueType == ValueType::INTEGER && curToken->isType(CHARCON)))
 						type_unmatch = true;
-					if (!constant()) {
-						return false;
-					}
+					constant();
 					node.addNode(subNode);
 					col_count++;
 				}
-				if (!checkToken(RBRACE, "<RBRACE>", &node)) {
-					return false;
-				}
+				checkToken(RBRACE, "<RBRACE>", &node);
 				if (col_count != ste.arrayInfo.array_col) {
 					num_unmatch = true;
 				}
 				row_count++;
 			}
-			if (!checkToken(RBRACE, "<RBRACE>", &node)) {
-				return false;
-			}
+			checkToken(RBRACE, "<RBRACE>", &node);
 			if (row_count != ste.arrayInfo.array_row) {
 				num_unmatch = true;
 			}
 		}
 	}
 	else {
-		return false;
+	cout << "语法分析<变量定义及初始化>: 变量定义初始化错误" << endl;
 	}
 	if (num_unmatch)
 		errorHandler.printError(ARRAY_INIT_NUM_UNMATCH, TOKEN_PEEK(-1).getLinenum());
@@ -725,7 +608,6 @@ bool Parser::varDefWithInitial() {
 	}
 
 	subNode = node;
-	return true;
 }
 
 /*
@@ -733,27 +615,18 @@ bool Parser::varDefWithInitial() {
 <有返回值函数定义>  ::=  <声明头部>[LPARENT]<参数表>[RPARENT] [LBRACE]<复合语句>[RBRACE]
 FIRST INTTK CHARTK
 */
-bool Parser::funcWithReturn() {
+void Parser::funcWithReturn() {
 	AST_node node("<有返回值函数定义>", true);
 	STE ste;
 	ste.identType = IdentType::FUNCTION;
 	has_return = false;
 
-	if (!declareHead(&ste)) {
-		cout << "语法分析<有返回值函数定义>: 声明头部错误" << endl;
-		return false;
-	}
+	declareHead(&ste);
 	node.addNode(subNode);
 
-	if (!checkToken(LPARENT, "<LPARENT>", &node)) {
-		cout << "语法分析<有返回值函数定义>: 缺少左括号" << endl;
-		return false;
-	}
+	checkToken(LPARENT, "<LPARENT>", &node);
 
-	if (!paramList(&ste)) {
-		cout << "语法分析<有返回值函数定义>: 参数列表错误" << endl;
-		return false;
-	}
+	paramList(&ste);
 	node.addNode(subNode);
 
 	if (curToken->isType(RPARENT))
@@ -767,32 +640,22 @@ bool Parser::funcWithReturn() {
 		errorHandler.printError(DUP_DEFINE, curToken->getLinenum());
 	}
 
-	if (!checkToken(LBRACE, "<LBRACE>", &node)) {
-		cout << "语法分析<有返回值函数定义>: 缺少左大括号" << endl;
-		return false;
-	}
+	checkToken(LBRACE, "<LBRACE>", &node);
 	//符号表进入下一层
 	symbolTableManager.goInto(ste.name);
 
-	if (!comStatement()) {
-		cout << "语法分析<有返回值函数定义>: 复合语句错误" << endl;
-		return false;
-	}
+	comStatement();
 	node.addNode(subNode);
 
 	if (!has_return)
 		errorHandler.printError(RETURN_FUNC_ERROR, curToken->getLinenum());
 
-	if (!checkToken(RBRACE, "<RBRACE>", &node)) {
-		cout << "语法分析<有返回值函数定义>: 缺少右大括号" << endl;
-		return false;
-	}
+	checkToken(RBRACE, "<RBRACE>", &node);
 
 	// 符号表退出子层
 	symbolTableManager.goOut();
 
 	subNode = node;
-	return true;
 }
 
 /*
@@ -801,15 +664,12 @@ bool Parser::funcWithReturn() {
 FIRST VOIDTK
 */
 
-bool Parser::funcNoReturn() {
+void Parser::funcNoReturn() {
 	AST_node node("<无返回值函数定义>", true);
 	STE ste;
 	ste.identType = IdentType::FUNCTION;
 
-	if (!checkToken(VOIDTK, "<VOIDTK>", &node)) {
-		cout << "语法分析<无返回值函数定义>: 缺少void" << endl;
-		return false;
-	}
+	checkToken(VOIDTK, "<VOIDTK>", &node);
 	ste.valueType = ValueType::VOID;
 
 	if (curToken->isType(IDENFR)) {
@@ -819,18 +679,11 @@ bool Parser::funcNoReturn() {
 	}
 	else {
 		cout << "语法分析<<无返回值函数定义>: 缺少标识符" << endl;
-		return false;
 	}
 
-	if (!checkToken(LPARENT, "<LPARENT>", &node)) {
-		cout << "语法分析<无返回值函数定义>: 缺少左括号" << endl;
-		return false;
-	}
+	checkToken(LPARENT, "<LPARENT>", &node);
 
-	if (!paramList(&ste)) {
-		cout << "语法分析<无返回值函数定义>: 参数列表错误" << endl;
-		return false;
-	}
+	paramList(&ste);
 	node.addNode(subNode);
 
 	if (curToken->isType(RPARENT))
@@ -844,30 +697,20 @@ bool Parser::funcNoReturn() {
 		errorHandler.printError(DUP_DEFINE, curToken->getLinenum());
 	}
 
-	if (!checkToken(LBRACE, "<LBRACE>", &node)) {
-		cout << "语法分析<无返回值函数定义>: 缺少左大括号" << endl;
-		return false;
-	}
+	checkToken(LBRACE, "<LBRACE>", &node);
 
 	//符号表进入下一层
 	symbolTableManager.goInto(ste.name);
 
-	if (!comStatement()) {
-		cout << "语法分析<无返回值函数定义>: 复合语句错误" << endl;
-		return false;
-	}
+	comStatement();
 	node.addNode(subNode);
 
-	if (!checkToken(RBRACE, "<RBRACE>", &node)) {
-		cout << "语法分析<无返回值函数定义>: 缺少右大括号" << endl;
-		return false;
-	}
+	checkToken(RBRACE, "<RBRACE>", &node);
 
 	// 符号表退出子层
 	symbolTableManager.goOut();
 
 	subNode = node;
-	return true;
 }
 
 /*
@@ -875,33 +718,23 @@ bool Parser::funcNoReturn() {
 <复合语句>	::=  ［<常量说明>］［<变量说明>］<语句列>
 FIRST CONSTTK INTTK CHARTK WHILETK FORTK IFTK IDENFR IDENFR IDENFR SCANFTK PRINTFTK SWITCHTK SEMICN RETURNTK LBRACE <空>
 */
-bool Parser::comStatement() {
+void Parser::comStatement() {
 	AST_node node("<复合语句>", true);
 	if (curToken->isType(CONSTTK)) {
-		if (!constDeclare()) {
-			cout << "语法分析<复合语句>:  常量说明错误" << endl;
-			return false;
-		}
+		constDeclare();
 		node.addNode(subNode);
 	}
 
 	if ((TOKEN_PEEK(0).isType(INTTK) || TOKEN_PEEK(0).isType(CHARTK))
 		&& TOKEN_PEEK(1).isType(IDENFR) && !TOKEN_PEEK(2).isType(LPARENT)) {
-		if (!varDeclare()) {
-			cout << "语法分析<复合语句>:  变量说明错误" << endl;
-			return false;
-		}
+		varDeclare();
 		node.addNode(subNode);
 	}
 
-	if (!statementList()) {
-		cout << "语法分析<复合语句>:  语句列错误" << endl;
-		return false;
-	}
+	statementList();
 	node.addNode(subNode);
 
 	subNode = node;
-	return true;
 }
 
 /*
@@ -909,7 +742,7 @@ bool Parser::comStatement() {
 <参数表>	::= <类型标识符><标识符>{[COMMA]<类型标识符><标识符>} |<空>
 FIRST INTTK CHARTK EMPTY
 */
-bool Parser::paramList(STE* ste) {
+void Parser::paramList(STE* ste) {
 	AST_node node("<参数表>", true);
 	vector<Argument> args;
 	STE param_ste;
@@ -924,10 +757,8 @@ bool Parser::paramList(STE* ste) {
 
 		argu.name = curToken->getTokenStr();
 		param_ste.name = curToken->getTokenStr();
-		if (!checkToken(IDENFR, "<标识符>", &node)) {
-			cout << "语法分析<参数表>: 缺少标识符" << endl;
-			return false;
-		}
+		checkToken(IDENFR, "<标识符>", &node);
+
 		args.emplace_back(argu);
 		if(!symbolTableManager.insert(param_ste, ste))
 			errorHandler.printError(DUP_DEFINE, curToken->getLinenum());
@@ -937,7 +768,6 @@ bool Parser::paramList(STE* ste) {
 
 			if (!curToken->isType(INTTK) && !curToken->isType(CHARTK)) {
 				cout << "语法分析<常量定义>: 缺少类型标识符" << endl;
-				return false;
 			}
 			argu.type = curToken->isType(INTTK) ? ValueType::INTEGER : ValueType::CHAR;
 			param_ste.valueType = curToken->isType(INTTK) ? ValueType::INTEGER : ValueType::CHAR;
@@ -946,10 +776,7 @@ bool Parser::paramList(STE* ste) {
 
 			argu.name = curToken->getTokenStr();
 			param_ste.name = curToken->getTokenStr();
-			if (!checkToken(IDENFR, "<标识符>", &node)) {
-				cout << "语法分析<参数表>: 缺少标识符" << endl;
-				return false;
-			}
+			checkToken(IDENFR, "<标识符>", &node);
 			args.emplace_back(argu);
 			if (!symbolTableManager.insert(param_ste, ste))
 				errorHandler.printError(DUP_DEFINE, curToken->getLinenum());
@@ -961,7 +788,6 @@ bool Parser::paramList(STE* ste) {
 	ste->args = args;
 
 	subNode = node;
-	return true;
 }
 
 /*
@@ -969,26 +795,21 @@ bool Parser::paramList(STE* ste) {
 <主函数>    ::= [VOIDTK] [MAINTK][LPARENT][RPARENT] [LBRACE]<复合语句>[RBRACE]
 FIRST VOIDTK
 */
-bool Parser::mainFunc() {
+void Parser::mainFunc() {
 	AST_node node("<主函数>", true);
 	STE ste;
 	ste.identType = IdentType::FUNCTION;
 
-	if (!checkToken(VOIDTK, "<VOIDTK>", &node) || !checkToken(MAINTK, "<MAINTK>", &node) 
-		|| !checkToken(LPARENT, "<LPARENT>", &node)) {
-		cout << "语法分析<主函数>: 函数头错误" << endl;
-		return false;
-	}
+	checkToken(VOIDTK, "<VOIDTK>", &node);
+	checkToken(MAINTK, "<MAINTK>", &node);
+	checkToken(LPARENT, "<LPARENT>", &node);
 
 	if (curToken->isType(RPARENT))
 		checkToken(RPARENT, "<RPARENT>", &node);
 	else
 		errorHandler.printError(MISSING_RPARENT, TOKEN_PEEK(-1).getLinenum());
 
-	if (!checkToken(LBRACE, "<LBRACE>", &node)) {
-		cout << "语法分析<主函数>: 函数头错误" << endl;
-			return false;
-	}
+	checkToken(LBRACE, "<LBRACE>", &node);
 
 	ste.name = "main";
 	ste.valueType = ValueType::VOID;
@@ -1000,22 +821,15 @@ bool Parser::mainFunc() {
 	//符号表进入下一层
 	symbolTableManager.goInto(ste.name);
 
-	if (!comStatement()) {
-		cout << "语法分析<主函数>: 复合语句错误" << endl;
-		return false;
-	}
+	comStatement();
 	node.addNode(subNode);
 
-	if (!checkToken(RBRACE, "<RBRACE>", &node)) {
-		cout << "语法分析<主函数>: 缺号左括号" << endl;
-		return false;
-	}
+	checkToken(RBRACE, "<RBRACE>", &node);
 
 	// 符号表退出子层
 	symbolTableManager.goOut();
 
 	subNode = node;
-	return true;
 }
 
 /*
@@ -1025,29 +839,23 @@ FIRST PLUS MINU IDENFR LPARENT PLUS MINU INTCON CHARCON IDENFR
 */
 bool Parser::expression() {
 	AST_node node("<表达式>", true);
-	isChar = false;
+	bool isChar = false;
 	if (curToken->isType(PLUS) || curToken->isType(MINU)) {
 		ADD_TOKENNODE("<加法运算符>", curToken, node);
 		curToken = &TOKEN_GET;
 	}
-	if (!item()) {
-		cout << "语法分析<表达式>: 项分析错误" << endl;
-		return false;
-	}
+	isChar = item();
 	node.addNode(subNode);
 	while (curToken->isType(PLUS) || curToken->isType(MINU)) {
+		isChar = false;
 		ADD_TOKENNODE("<加法运算符>", curToken, node);
 		curToken = &TOKEN_GET;
 
-		if (!item()) {
-			cout << "语法分析<表达式>: 项分析错误" << endl;
-			return false;
-		}
+		item();
 		node.addNode(subNode);
-		isChar = false;
 	}
 	subNode = node;
-	return true;
+	return isChar;
 }
 
 /*
@@ -1056,24 +864,21 @@ bool Parser::expression() {
 FIRST IDENFR LPARENT PLUS MINU INTCON CHARCON IDENFR
 */
 bool Parser::item() {
+	bool isChar = false;
 	AST_node node("<项>", true);
-	if (!factor()) {
-		return false;
-	}
+	isChar = factor();
 	node.addNode(subNode);
 	while (curToken->isType(MULT) || curToken->isType(DIV))
 	{
+		isChar = false;
 		ADD_TOKENNODE("<乘法运算符>", curToken, node);
 		curToken = &TOKEN_GET;
 
-		if (!factor()) {
-			return false;
-		}
+		factor();
 		node.addNode(subNode);
-		isChar = false;
 	}
 	subNode = node;
-	return true;
+	return isChar;
 }
 
 /*
@@ -1093,6 +898,7 @@ bool Parser::item() {
 FIRST IDENFR LPARENT PLUS MINU INTCON CHARCON IDENFR
 */
 bool Parser::factor() {
+	bool isChar = false;
 	AST_node node("<因子>", true);
 	if (TOKEN_PEEK(0).isType(IDENFR) && TOKEN_PEEK(1).isType(LPARENT)) {
 		if (!symbolTableManager.find(curToken->getTokenStr())) {
@@ -1104,12 +910,8 @@ bool Parser::factor() {
 				isChar = true;
 			}
 		}
-		bool old_ischar = isChar;
-		if (!callFuncWithReturn()) {
-			return false;
-		}
+		callFuncWithReturn();
 		node.addNode(subNode);
-		isChar = old_ischar;
 	}
 	else if (curToken->isType(IDENFR)) {
 		if (!symbolTableManager.find(curToken->getTokenStr())) {
@@ -1126,15 +928,11 @@ bool Parser::factor() {
 		if (curToken->isType(LBRACK)) {
 			checkToken(LBRACK, "<LBRACK>", &node);
 
-			bool old_ischar = isChar;
-			if (!expression()) {
-				return false;
-			}
+			bool ischar = expression();
 			node.addNode(subNode);
-			if (isChar) {
+			if (ischar) {
 				errorHandler.printError(ARRAY_INDEX_TYPE_UNMATCH, curToken->getLinenum());
 			}
-			isChar = old_ischar;
 
 			
 			if (curToken->isType(RBRACK))
@@ -1144,15 +942,11 @@ bool Parser::factor() {
 			if (curToken->isType(LBRACK)) {
 				checkToken(LBRACK, "<LBRACK>", &node);
 
-				bool old_ischar = isChar;
-				if (!expression()) {
-					return false;
-				}
+				bool ischar = expression();
 				node.addNode(subNode);
-				if (isChar) {
+				if (ischar) {
 					errorHandler.printError(ARRAY_INDEX_TYPE_UNMATCH, curToken->getLinenum());
 				}
-				isChar = old_ischar;
 
 				if (curToken->isType(RBRACK))
 					checkToken(RBRACK, "<RBRACK>", &node);
@@ -1163,9 +957,7 @@ bool Parser::factor() {
 	}
 	else if (curToken->isType(LPARENT)) {
 		checkToken(LPARENT, "<LPARENT>", &node);
-		if (!expression()) {
-			return false;
-		}
+		expression();
 		node.addNode(subNode);
 
 		if (curToken->isType(RPARENT))
@@ -1174,24 +966,20 @@ bool Parser::factor() {
 			errorHandler.printError(MISSING_RPARENT, TOKEN_PEEK(-1).getLinenum());
 	}
 	else if (curToken->isType(INTCON) || curToken->isType(PLUS) || curToken->isType(MINU)) {
-		if (!integer()) {
-			return false;
-		}
+		integer();
 		node.addNode(subNode);
 	}
 	else if (curToken->isType(CHARCON)) {
 		isChar = true;
-		if (!checkToken(CHARCON, "<CHARCON>", &node)) {
-			return false;
-		}
+		checkToken(CHARCON, "<CHARCON>", &node);
 	}
 	else
 	{
-		return false;
+		cout << "语法分析<因子>: 未识别的因子" << endl;
 	}
 
 	subNode = node;
-	return true;
+	return isChar;
 }
 
 /*
@@ -1210,43 +998,28 @@ bool Parser::factor() {
 
 FIRST WHILETK FORTK IFTK IDENFR IDENFR IDENFR SCANFTK PRINTFTK SWITCHTK SEMICN RETURNTK LBRACE
 */
-bool Parser::statement() {
+void Parser::statement() {
 	AST_node node("<语句>", true);
 	if (curToken->isType(WHILETK) || curToken->isType(FORTK)) {
-		if (!loopStatement()) {
-			cout << "语法分析<语句>: 循环语句错误" << endl;
-			return false;
-		}
+		loopStatement();
 		node.addNode(subNode);
 	}
 	else if (curToken->isType(IFTK)) {
-		if (!ifStatement()) {
-			cout << "语法分析<语句>: 条件语句错误" << endl;
-			return false;
-		}
+		ifStatement();
 		node.addNode(subNode);
 	}
 	else if (curToken->isType(IDENFR)) {
 		if (TOKEN_PEEK(1).isType(LPARENT) && funcNames[curToken->getTokenStr()]) {
-			if (!callFuncWithReturn()) {
-				cout << "语法分析<语句>: 有返回值函数调用语句错误" << endl;
-				return false;
-			}
+			callFuncWithReturn();
 			node.addNode(subNode);
 		}
 		else if(TOKEN_PEEK(1).isType(LPARENT) && !funcNames[curToken->getTokenStr()]){
-			if (!callFuncNoReturn()) {
-				cout << "语法分析<语句>: 无返回值函数调用语句错误" << endl;
-				return false;
-			}
+			callFuncNoReturn();
 			node.addNode(subNode);
 		}
 		else
 		{
-			if (!assignStatement()) {
-				cout << "语法分析<语句>: 赋值语句错误" << endl;
-				return false;
-			}
+			assignStatement();
 			node.addNode(subNode);
 		}
 
@@ -1256,10 +1029,7 @@ bool Parser::statement() {
 			errorHandler.printError(MISSING_SEMICN, TOKEN_PEEK(-1).getLinenum());
 	}
 	else if (curToken->isType(SCANFTK)) {
-		if (!scanfStatement()) {
-			cout << "语法分析<语句>: 读语句错误" << endl;
-			return false;
-		}
+		scanfStatement();
 		node.addNode(subNode);
 		if (curToken->isType(SEMICN))
 			checkToken(SEMICN, "<SEMICN>", &node);
@@ -1267,10 +1037,7 @@ bool Parser::statement() {
 			errorHandler.printError(MISSING_SEMICN, TOKEN_PEEK(-1).getLinenum());
 	}
 	else if (curToken->isType(PRINTFTK)) {
-		if (!printfStatement()) {
-			cout << "语法分析<语句>: 写语句错误" << endl;
-			return false;
-		}
+		printfStatement();
 		node.addNode(subNode);
 		if (curToken->isType(SEMICN))
 			checkToken(SEMICN, "<SEMICN>", &node);
@@ -1278,17 +1045,11 @@ bool Parser::statement() {
 			errorHandler.printError(MISSING_SEMICN, TOKEN_PEEK(-1).getLinenum());
 	}
 	else if (curToken->isType(SWITCHTK)) {
-		if (!switchStatement()) {
-			cout << "语法分析<语句>: 情况语句错误" << endl;
-			return false;
-		}
+		switchStatement();
 		node.addNode(subNode);
 	}
 	else if (curToken->isType(RETURNTK)) {
-		if (!returnStatement()) {
-			cout << "语法分析<语句>: 返回语句错误" << endl;
-			return false;
-		}
+		returnStatement();
 		node.addNode(subNode);
 		if (curToken->isType(SEMICN))
 			checkToken(SEMICN, "<SEMICN>", &node);
@@ -1297,15 +1058,9 @@ bool Parser::statement() {
 	}
 	else if (curToken->isType(LBRACE)) {
 		checkToken(LBRACE, "<LBRACE>", &node);
-		if (!statementList()) {
-			cout << "语法分析<语句>: 语句列错误" << endl;
-			return false;
-		}
+		statementList();
 		node.addNode(subNode);
-		if (!checkToken(RBRACE, "<RBRACE>", &node)) {
-			cout << "语法分析<语句>: 语句列缺少左括号" << endl;
-			return false;
-		}
+		checkToken(RBRACE, "<RBRACE>", &node);
 	}
 	else {
 		if (curToken->isType(SEMICN))
@@ -1314,7 +1069,6 @@ bool Parser::statement() {
 			errorHandler.printError(MISSING_SEMICN, TOKEN_PEEK(-1).getLinenum());
 	}
 	subNode = node;
-	return true;
 }
 
 /*
@@ -1324,7 +1078,7 @@ bool Parser::statement() {
 				  <标识符>[LBRACK]<表达式>[RBRACK][LBRACK]<表达式>[RBRACK] [ASSIGN]<表达式>
 FIRST IDENFR
 */
-bool Parser::assignStatement() {
+void Parser::assignStatement() {
 	AST_node node("<赋值语句>", true);
 
 	if (curToken->isType(IDENFR)) {
@@ -1338,17 +1092,15 @@ bool Parser::assignStatement() {
 		checkToken(IDENFR, "<标识符>", &node);
 	}
 	else {
-		return false;
+		cout << "语法分析<赋值语句>: 标识符错误" << endl;
 	}
 
 	if (curToken->isType(LBRACK)) {
 		checkToken(LBRACK, "<LBRACK>", &node);
 
-		if (!expression()) {
-			return false;
-		}
+		bool ischar = expression();
 		node.addNode(subNode);
-		if (isChar) {
+		if (ischar) {
 			errorHandler.printError(ARRAY_INDEX_TYPE_UNMATCH, curToken->getLinenum());
 		}
 
@@ -1360,11 +1112,9 @@ bool Parser::assignStatement() {
 		if (curToken->isType(LBRACK)) {
 			checkToken(LBRACK, "<LBRACK>", &node);
 
-			if (!expression()) {
-				return false;
-			}
+			bool ischar = expression();
 			node.addNode(subNode);
-			if (isChar) {
+			if (ischar) {
 				errorHandler.printError(ARRAY_INDEX_TYPE_UNMATCH, curToken->getLinenum());
 			}
 
@@ -1374,15 +1124,10 @@ bool Parser::assignStatement() {
 				errorHandler.printError(MISSING_RBRACK, TOKEN_PEEK(-1).getLinenum());
 		}
 	}
-	if (!checkToken(ASSIGN, "<ASSIGN>", &node)) {
-		return false;
-	}
-	if (!expression()) {
-		return false;
-	}
+	checkToken(ASSIGN, "<ASSIGN>", &node);
+	expression();
 	node.addNode(subNode);
 	subNode = node;
-	return true;
 }
 
 /*
@@ -1390,14 +1135,13 @@ bool Parser::assignStatement() {
 <条件语句>  ::= [IFTK] [LPARENT]<条件>[RPARENT]<语句>［[ELSETK]<语句>］
 FIRST IFTK
 */
-bool Parser::ifStatement() {
+void Parser::ifStatement() {
 	AST_node node("<条件语句>", true);
-	if (!checkToken(IFTK, "<IFTK>", &node) || !checkToken(LPARENT, "<LPARENT>", &node)) {
-		return false;
-	}
-	if (!condition()) {
-		return false;
-	}
+
+	checkToken(IFTK, "<IFTK>", &node);
+	checkToken(LPARENT, "<LPARENT>", &node);
+
+	condition();
 	node.addNode(subNode);
 
 	if (curToken->isType(RPARENT))
@@ -1405,19 +1149,14 @@ bool Parser::ifStatement() {
 	else
 		errorHandler.printError(MISSING_RPARENT, TOKEN_PEEK(-1).getLinenum());
 
-	if (!statement()) {
-		return false;
-	}
+	statement();
 	node.addNode(subNode);
 	if (curToken->isType(ELSETK)) {
 		checkToken(ELSETK, "<ELSETK>", &node);
-		if (!statement()) {
-			return false;
-		}
+		statement();
 		node.addNode(subNode);
 	}
 	subNode = node;
-	return true;
 }
 
 /*
@@ -1427,15 +1166,14 @@ FIRST PLUS MINU IDENFR LPARENT PLUS MINU INTCON CHARCON IDENFR
 (symbol == LSS || symbol == LEQ || symbol == GRE
 		|| symbol == GEQ || symbol == EQL || symbol == NEQ)
 */
-bool Parser::condition() {
+void Parser::condition() {
 	AST_node node("<条件>", true);
-	bool ischar = false;
+	bool isChar = false;
+	bool ischar;
 
-	if (!expression()) {
-		return false;
-	}
+	ischar = expression();
 	node.addNode(subNode);
-	ischar = isChar ? true: ischar;
+	isChar = ischar ? true: isChar;
 
 	if (curToken->isType(LSS) || curToken->isType(LEQ) || curToken->isType(GRE)
 		|| curToken->isType(GEQ) || curToken->isType(EQL) || curToken->isType(NEQ)) {
@@ -1443,21 +1181,18 @@ bool Parser::condition() {
 		curToken = &TOKEN_GET;
 	}
 	else {
-		return false;
+		cout << "语法分析<条件>: 关系运算符" << endl;
 	}
 
-	if (!expression()) {
-		return false;
-	}
+	ischar = expression();
 	node.addNode(subNode);
-	ischar = isChar ? true : ischar;
+	isChar = ischar ? true : isChar;
 
 	// 错误处理：不合法类型
-	if (ischar)
+	if (isChar)
 		errorHandler.printError(ILLEGAL_CONDITION_TYPE, curToken->getLinenum());
 
 	subNode = node;
-	return true;
 }
 
 /*
@@ -1467,29 +1202,26 @@ bool Parser::condition() {
 
 FIRST WHILETK FORTK
 */
-bool Parser::loopStatement() {
+void Parser::loopStatement() {
 	AST_node node("<循环语句>", true);
 	if (curToken->isType(WHILETK)) {
-		if (!checkToken(WHILETK, "<WHILETK>", &node) || !checkToken(LPARENT, "<LPARENT>", &node)) {
-			return false;
-		}
-		if (!condition()) {
-			return false;
-		}
+		checkToken(WHILETK, "<WHILETK>", &node);
+		checkToken(LPARENT, "<LPARENT>", &node);
+
+		condition();
 		node.addNode(subNode);
+
 		if (curToken->isType(RPARENT))
 			checkToken(RPARENT, "<RPARENT>", &node);
 		else
 			errorHandler.printError(MISSING_RPARENT, TOKEN_PEEK(-1).getLinenum());
-		if (!statement()) {
-			return false;
-		}
+
+		statement();
 		node.addNode(subNode);
 	}
 	else {
-		if (!checkToken(FORTK, "<FORTK>", &node) || !checkToken(LPARENT, "<LPARENT>", &node)) {
-			return false;
-		}
+		checkToken(FORTK, "<FORTK>", &node);
+		checkToken(LPARENT, "<LPARENT>", &node);
 
 		if (curToken->isType(IDENFR)) {
 			if (!symbolTableManager.find(curToken->getTokenStr())) {
@@ -1497,17 +1229,10 @@ bool Parser::loopStatement() {
 			}
 			checkToken(IDENFR, "<标识符>", &node);
 		}
-		else {
-			return false;
-		}
 
-		if (!checkToken(ASSIGN, "<ASSIGN>", &node)) {
-			return false;
-		}
+		checkToken(ASSIGN, "<ASSIGN>", &node);
 
-		if (!expression()) {
-			return false;
-		}
+		expression();
 		node.addNode(subNode);
 
 		if (curToken->isType(SEMICN))
@@ -1515,9 +1240,7 @@ bool Parser::loopStatement() {
 		else
 			errorHandler.printError(MISSING_SEMICN, TOKEN_PEEK(-1).getLinenum());
 
-		if (!condition()) {
-			return false;
-		}
+		condition();
 		node.addNode(subNode);
 
 		if (curToken->isType(SEMICN))
@@ -1531,57 +1254,44 @@ bool Parser::loopStatement() {
 			}
 			checkToken(IDENFR, "<标识符>", &node);
 		}
-		else {
-			return false;
-		}
 
-		if (!checkToken(ASSIGN, "<ASSIGN>", &node)) {
-			return false;
-		}
+		checkToken(ASSIGN, "<ASSIGN>", &node);
 
 		if (curToken->isType(IDENFR)) {
 			if (!symbolTableManager.find(curToken->getTokenStr())) {
 				errorHandler.printError(NO_DEFINE, curToken->getLinenum());
 			}
 			checkToken(IDENFR, "<标识符>", &node);
-		}
-		else {
-			return false;
 		}
 
 		if (curToken->isType(PLUS) || curToken->isType(MINU)) {
 			ADD_TOKENNODE("<加法运算符>", curToken, node);
 			curToken = &TOKEN_GET;
 		}
-		if (!step()) {
-			return false;
-		}
+
+		step();
 		node.addNode(subNode);
+
 		if (curToken->isType(RPARENT))
 			checkToken(RPARENT, "<RPARENT>", &node);
 		else
 			errorHandler.printError(MISSING_RPARENT, TOKEN_PEEK(-1).getLinenum());
-		if (!statement()) {
-			return false;
-		}
+
+		statement();
 		node.addNode(subNode);
 	}
 	subNode = node;
-	return true;
 }
 
 /*
 <步长>::= <无符号整数>
 <步长>::= <无符号整数>
 */
-bool Parser::step() {
+void Parser::step() {
 	AST_node node("<步长>", true);
-	if (!unsignedInt()) {
-		return false;
-	}
+	unsignedInt();
 	node.addNode(subNode);
 	subNode = node;
-	return true;
 }
 
 /*
@@ -1590,41 +1300,34 @@ bool Parser::step() {
 
 FIRST SWITCHTK
 */
-bool Parser::switchStatement() {
-	bool ischar = false;
+void Parser::switchStatement() {
 	AST_node node("<情况语句>", true);
-	if (!checkToken(SWITCHTK, "<SWITCHTK>", &node) || !checkToken(LPARENT, "<LPARENT>", &node)) {
-		return false;
-	}
-	if (!expression()) {
-		return false;
-	}
+	checkToken(SWITCHTK, "<SWITCHTK>", &node);
+	checkToken(LPARENT, "<LPARENT>", &node);
+
+	bool ischar = expression();
 	node.addNode(subNode);
-	ischar = isChar;
+
 	if (curToken->isType(RPARENT))
 		checkToken(RPARENT, "<RPARENT>", &node);
 	else
 		errorHandler.printError(MISSING_RPARENT, TOKEN_PEEK(-1).getLinenum());
-	if (!checkToken(LBRACE, "<LBRACE>", &node)) {
-		return false;
-	}
-	if (!caseList(ischar)) {
-		return false;
-	}
+
+	checkToken(LBRACE, "<LBRACE>", &node);
+
+	caseList(ischar);
 	node.addNode(subNode);
+
 	if (curToken->isType(DEFAULTTK)) {
-		if (!defaultStatement()) {
-			return false;
-		}
+		defaultStatement();
 		node.addNode(subNode);
 	}
 	else
 		errorHandler.printError(MISSING_DEFAULT, curToken->getLinenum());
-	if (!checkToken(RBRACE, "<RBRACE>", &node)) {
-		return false;
-	}
+
+	checkToken(RBRACE, "<RBRACE>", &node);
+
 	subNode = node;
-	return true;
 }
 
 /*
@@ -1633,20 +1336,15 @@ bool Parser::switchStatement() {
 
 FIRST CASETK
 */
-bool Parser::caseList(bool ischar) {
+void Parser::caseList(bool ischar) {
 	AST_node node("<情况表>", true);
-	if (!caseStatement(ischar)) {
-		return false;
-	}
+	caseStatement(ischar);
 	node.addNode(subNode);
 	while (curToken->isType(CASETK)) {
-		if (!caseStatement(ischar)) {
-			return false;
-		}
+		caseStatement(ischar);
 		node.addNode(subNode);
 	}
 	subNode = node;
-	return true;
 }
 
 /*
@@ -1655,26 +1353,22 @@ bool Parser::caseList(bool ischar) {
 
 FIRST CASETK
 */
-bool Parser::caseStatement(bool ischar) {
+void Parser::caseStatement(bool ischar) {
 	AST_node node("<情况子语句>", true);
-	if (!checkToken(CASETK, "<CASETK>", &node)) {
-		return false;
-	}
+	checkToken(CASETK, "<CASETK>", &node);
+
 	if ((ischar && !curToken->isType(CHARCON)) || (!ischar && curToken->isType(CHARCON)))
 		errorHandler.printError(CONST_TYPE_UNMATCH, curToken->getLinenum());
-	if (!constant()) {
-		return false;
-	}
+
+	constant();
 	node.addNode(subNode);
-	if (!checkToken(COLON, "<COLON>", &node)) {
-		return false;
-	}
-	if (!statement()) {
-		return false;
-	}
+
+	checkToken(COLON, "<COLON>", &node);
+
+	statement();
 	node.addNode(subNode);
+
 	subNode = node;
-	return true;
 }
 
 /*
@@ -1683,20 +1377,13 @@ bool Parser::caseStatement(bool ischar) {
 
 FIRST DEFAULTTK
 */
-bool Parser::defaultStatement() {
+void Parser::defaultStatement() {
 	AST_node node("<缺省>", true);
-	if (!checkToken(DEFAULTTK, "<DEFAULTTK>", &node)) {
-		return false;
-	}
-	if (!checkToken(COLON, "<COLON>", &node)) {
-		return false;
-	}
-	if (!statement()) {
-		return false;
-	}
+	checkToken(DEFAULTTK, "<DEFAULTTK>", &node);
+	checkToken(COLON, "<COLON>", &node);
+	statement();
 	node.addNode(subNode);
 	subNode = node;
-	return true;
 }
 
 /*
@@ -1705,7 +1392,7 @@ bool Parser::defaultStatement() {
 
 FIRST IDENFR
 */
-bool Parser::callFuncWithReturn() {
+void Parser::callFuncWithReturn() {
 	string funcName;
 	AST_node node("<有返回值函数调用语句>", true);
 	if (curToken->isType(IDENFR)) {
@@ -1719,23 +1406,20 @@ bool Parser::callFuncWithReturn() {
 		}
 		checkToken(IDENFR, "<标识符>", &node);
 	}
-	else {
-		return false;
-	}
-	if (!checkToken(LPARENT, "<LPARENT>", &node)) {
-		return false;
-	}
-	if (!valueParamList(funcName)) {
-		return false;
-	}
+
+	checkToken(LPARENT, "<LPARENT>", &node);
+
+	valueParamList(funcName);
 	node.addNode(subNode);
+
 	if (curToken->isType(RPARENT))
 		checkToken(RPARENT, "<RPARENT>", &node);
 	else
 		errorHandler.printError(MISSING_RPARENT, TOKEN_PEEK(-1).getLinenum());
+
 	subNode = node;
 	END:
-	return true;
+	return;
 }
 
 /*
@@ -1744,7 +1428,7 @@ bool Parser::callFuncWithReturn() {
 
 FIRST IDENFR
 */
-bool Parser::callFuncNoReturn() {
+void Parser::callFuncNoReturn() {
 	string funcName;
 	AST_node node("<无返回值函数调用语句>", true);
 	if (curToken->isType(IDENFR)) {
@@ -1758,23 +1442,20 @@ bool Parser::callFuncNoReturn() {
 		}
 		checkToken(IDENFR, "<标识符>", &node);
 	}
-	else {
-		return false;
-	}
-	if (!checkToken(LPARENT, "<LPARENT>", &node)) {
-		return false;
-	}
-	if (!valueParamList(funcName)) {
-		return false;
-	}
+
+	checkToken(LPARENT, "<LPARENT>", &node);
+
+	valueParamList(funcName);
 	node.addNode(subNode);
+
 	if (curToken->isType(RPARENT))
 		checkToken(RPARENT, "<RPARENT>", &node);
 	else
 		errorHandler.printError(MISSING_RPARENT, TOKEN_PEEK(-1).getLinenum());
+
 	subNode = node;
 	END:
-	return true;
+	return;
 }
 
 /*
@@ -1783,7 +1464,7 @@ bool Parser::callFuncNoReturn() {
 
 FIRST IDENFR LPARENT PLUS MINU INTCON CHARCON
 */
-bool Parser::valueParamList(string funcName) {
+void Parser::valueParamList(string funcName) {
 	AST_node node("<值参数表>", true);
 
 	STE* ste = symbolTableManager.curSTE;
@@ -1797,13 +1478,11 @@ bool Parser::valueParamList(string funcName) {
 		|| curToken->isType(MINU) || curToken->isType(INTCON) || curToken->isType(CHARCON)) {
 
 
-		if (!expression()) {
-			return false;
-		}
+		bool ischar = expression();
 		node.addNode(subNode);
 		if (iter != args.end()) {
-			if (((*iter).type == ValueType::CHAR && !isChar)
-				|| ((*iter).type == ValueType::INTEGER && isChar))
+			if (((*iter).type == ValueType::CHAR && !ischar)
+				|| ((*iter).type == ValueType::INTEGER && ischar))
 				typeUnmach = true;
 			iter++;
 		}
@@ -1814,13 +1493,11 @@ bool Parser::valueParamList(string funcName) {
 		{
 			checkToken(COMMA, "<COMMA>", &node);
 
-			if (!expression()) {
-				return false;
-			}
+			bool ischar = expression();
 			node.addNode(subNode);
 			if (iter != args.end()) {
-				if (((*iter).type == ValueType::CHAR && !isChar)
-					|| ((*iter).type == ValueType::INTEGER && isChar))
+				if (((*iter).type == ValueType::CHAR && !ischar)
+					|| ((*iter).type == ValueType::INTEGER && ischar))
 					typeUnmach = true;
 				iter++;
 			}
@@ -1835,7 +1512,6 @@ bool Parser::valueParamList(string funcName) {
 		errorHandler.printError(PARAMS_TYPE_UNMATCH, curToken->getLinenum());
 
 	subNode = node;
-	return true;
 }
 
 /*
@@ -1844,16 +1520,13 @@ bool Parser::valueParamList(string funcName) {
 
 FIRST WHILETK FORTK IFTK IDENFR IDENFR IDENFR SCANFTK PRINTFTK SWITCHTK SEMICN RETURNTK LBRACE <空>
 */
-bool Parser::statementList() {
+void Parser::statementList() {
 	AST_node node("<语句列>", true);
 	while (!curToken->isType(RBRACE)) {
-		if (!statement()) {
-			return false;
-		}
+		statement();
 		node.addNode(subNode);
 	}
 	subNode = node;
-	return true;
 }
 
 /*
@@ -1862,14 +1535,11 @@ bool Parser::statementList() {
 
 FIRST SCANFTK
 */
-bool Parser::scanfStatement() {
+void Parser::scanfStatement() {
 	AST_node node("<读语句>", true);
-	if (!checkToken(SCANFTK, "<SCANFTK>", &node)) {
-		return false;
-	}
-	if (!checkToken(LPARENT, "<LPARENT>", &node)) {
-		return false;
-	}
+	checkToken(SCANFTK, "<SCANFTK>", &node);
+
+	checkToken(LPARENT, "<LPARENT>", &node);
 
 	if (curToken->isType(IDENFR)) {
 		if (!symbolTableManager.find(curToken->getTokenStr())) {
@@ -1881,16 +1551,13 @@ bool Parser::scanfStatement() {
 		}
 		checkToken(IDENFR, "<标识符>", &node);
 	}
-	else {
-		return false;
-	}
 
 	if (curToken->isType(RPARENT))
 		checkToken(RPARENT, "<RPARENT>", &node);
 	else
 		errorHandler.printError(MISSING_RPARENT, TOKEN_PEEK(-1).getLinenum());
+
 	subNode = node;
-	return true;
 }
 
 /*
@@ -1899,31 +1566,22 @@ bool Parser::scanfStatement() {
 
 FIRST PRINTFTK
 */
-bool Parser::printfStatement() {
+void Parser::printfStatement() {
 	AST_node node("<写语句>", true);
-	if (!checkToken(PRINTFTK, "<PRINTFTK>", &node)) {
-		return false;
-	}
-	if (!checkToken(LPARENT, "<LPARENT>", &node)) {
-		return false;
-	}
+	checkToken(PRINTFTK, "<PRINTFTK>", &node);
+	checkToken(LPARENT, "<LPARENT>", &node);
+
 	if (curToken->isType(STRCON)) {
-		if (!String()) {
-			return false;
-		}
+		String();
 		node.addNode(subNode);
 		if (curToken->isType(COMMA)) {
 			checkToken(COMMA, "COMMA", &node);
-			if (!expression()) {
-				return false;
-			}
+			expression();
 			node.addNode(subNode);
 		}
 	}
 	else {
-		if (!expression()) {
-			return false;
-		}
+		expression();
 		node.addNode(subNode);
 	}
 	if (curToken->isType(RPARENT))
@@ -1931,7 +1589,6 @@ bool Parser::printfStatement() {
 	else
 		errorHandler.printError(MISSING_RPARENT, TOKEN_PEEK(-1).getLinenum());
 	subNode = node;
-	return true;
 }
 
 /*
@@ -1940,11 +1597,9 @@ bool Parser::printfStatement() {
 
 FIRST RETURNTK
 */
-bool Parser::returnStatement() {
+void Parser::returnStatement() {
 	AST_node node("<返回语句>", true);
-	if (!checkToken(RETURNTK, "<RETURNTK>", &node)) {
-		return false;
-	}
+	checkToken(RETURNTK, "<RETURNTK>", &node);
 	has_return = true;
 	if (curToken->isType(LPARENT)) {
 		checkToken(LPARENT, "<LPARENT>", &node);
@@ -1956,12 +1611,10 @@ bool Parser::returnStatement() {
 			errorHandler.printError(RETURN_FUNC_ERROR, curToken->getLinenum());
 		}
 		else{
-			if (!expression()) {
-				return false;
-			}
+			bool ischar = expression();
 			node.addNode(subNode);
-			if ((symbolTableManager.getPosType() == ValueType::INTEGER && isChar)
-				|| (symbolTableManager.getPosType() == ValueType::CHAR && !isChar)) {
+			if ((symbolTableManager.getPosType() == ValueType::INTEGER && ischar)
+				|| (symbolTableManager.getPosType() == ValueType::CHAR && !ischar)) {
 				errorHandler.printError(RETURN_FUNC_ERROR, curToken->getLinenum());
 			}
 		}
@@ -1975,5 +1628,4 @@ bool Parser::returnStatement() {
 			errorHandler.printError(RETURN_FUNC_ERROR, curToken->getLinenum());
 	}
 	subNode = node;
-	return true;
 }
