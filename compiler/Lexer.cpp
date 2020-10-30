@@ -1,4 +1,5 @@
 ﻿#include "Lexer.h"
+#include "ErrorHandler.h"
 
 using namespace std;
 
@@ -15,10 +16,12 @@ string reserved_words[] = { "const", "int", "char", "void", "main", "if", "else"
 vector<Token> tokenList;
 int tokenptr;
 
+extern ErrorHandler errorHandler;
+
 Lexer::Lexer() {
 	this->tokenbuf.clear();
 	this->linenumber = 1;
-	this->number = 0;
+	this->value = 0;
 	this->symbol = -1;
 }
 
@@ -81,7 +84,7 @@ void Lexer::dealDigit() {
 		ch = infile.get();
 	}
 	retract();
-	number = transNum();
+	value = transNum();
 	symbol = INTCON;
 }
 
@@ -91,9 +94,15 @@ void Lexer::dealCharConst() {
 		if (ch == '+' || ch == '-' || ch == '*' || ch == '/' || isLetter(ch) || isDigit(ch)) {
 			tokenbuf.push_back(ch);
 			symbol = CHARCON;
+			value = ch;
 		}
 		else {
-			symbol = ERROR;
+			errorHandler.printError(ILLEGAL_SYMBOL, this->linenumber);
+			symbol = CHARCON;
+			while (ch != '\'') {
+				ch = infile.get();
+			}
+			return;
 		}
 		ch = infile.get();
 		if (ch != '\'') {
@@ -105,12 +114,21 @@ void Lexer::dealCharConst() {
 void Lexer::dealStrConst() {
 	if (ch == '\"') {
 		ch = infile.get();
+		if (ch == '\"') {
+			errorHandler.printError(ILLEGAL_SYMBOL, this->linenumber);
+			symbol = STRCON;
+			return;
+		}
 		while (ch == 32 || ch == 33 || (ch >= 35 && ch <= 126)) {
 			tokenbuf.push_back(ch);
 			ch = infile.get();
 		}
 		if (ch != '\"') {
-			symbol = ERROR;
+			errorHandler.printError(ILLEGAL_SYMBOL, this->linenumber);
+			symbol = STRCON;
+			while (ch != '\"') {
+				ch = infile.get();
+			}
 			return;
 		}
 		symbol = STRCON;
@@ -120,15 +138,15 @@ void Lexer::dealStrConst() {
 void Lexer::getsym() {
 	clearToken();
 	ch = infile.get();
-	if (ch == EOF) {
-		symbol = EOFSYM;
-		return;
-	}
 	while (ch == '\n' || ch == '\r' || ch == ' ' || ch == '\t') {
-		if (ch == '\n' || ch == '\r') {
+		if (ch == '\n') {
 			linenumber++;
 		}
 		ch = infile.get();
+	}
+	if (ch == EOF) {
+		symbol = EOFSYM;
+		return;
 	}
 	if (isLetter(ch)) {
 		dealLetter();
@@ -256,6 +274,9 @@ void Lexer::lexicalAnalyse() {
 		}
 		else {
 			Token token(symbol, tokenbuf, linenumber);
+			if (symbol == INTCON || symbol == CHARCON) {
+				token.setValue(value);
+			}
 			// token.printToken();
 			tokenList.push_back(token);
 		}

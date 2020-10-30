@@ -36,3 +36,11 @@ void AST_node::print() {
 		outfile << this->name << endl;
 	}
 }
+
+void AST_node::setNum(int num) {
+	this->number = num;
+}
+
+int AST_node::getNum() {
+	return number;
+}

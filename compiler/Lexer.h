@@ -34,7 +34,7 @@ public:
 	void lexicalAnalyse();
 private:
 	string tokenbuf;
-	int number;
+	int value;
 	int symbol;
 	int linenumber;
 	char ch;

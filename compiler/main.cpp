@@ -9,6 +9,7 @@ using namespace std;
 
 ifstream infile;
 ofstream outfile;
+ofstream errfile;
 
 bool debug;
 
@@ -18,6 +19,7 @@ void open_file() {
 		cout << "the testfile.txt is not exit!" << endl;
 	}
 	outfile.open("output.txt");
+	errfile.open("error.txt");
 }
 
 int main() {
@@ -27,6 +29,6 @@ int main() {
 	lexer.lexicalAnalyse();
 	parser.initial();
 	parser.procedure();
-	parser.getRoot().print();
+	//parser.getRoot().print();
 	return 0;
 }

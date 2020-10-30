@@ -14,6 +14,8 @@ public:
 	void printToken();
 	int getType();
 	string getTokenStr();
+	int getValue();
+	int getLinenum();
 private:
 	int symbol;
 	string tokenStr;

@@ -15,9 +15,12 @@ public:
 	void addToken(Token* token);
 	void addNode(AST_node node);
 	void print();
+	void setNum(int num);
+	int getNum();
 private:
 	string name;
 	Token* token = NULL;
 	vector<AST_node> nodelist;
 	bool isSyntax = false;
+	int number;
 };

@@ -19,6 +19,10 @@ void Token::setValue(int value) {
 	this->value = value;
 }
 
+int Token::getValue() {
+	return this->value;
+}
+
 void Token::printToken() {
 	outfile << type_code[this->symbol] << " " << this->tokenStr.c_str() << endl;
 }
@@ -29,4 +33,8 @@ int Token::getType() {
 
 string Token::getTokenStr() {
 	return tokenStr;
+}
+
+int Token::getLinenum() {
+	return lineNumber;
 }

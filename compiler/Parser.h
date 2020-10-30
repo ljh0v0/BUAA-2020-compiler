@@ -1,7 +1,10 @@
 ﻿#pragma once
 
 #include "ast.h"
+#include "SymbolTable.h"
+#include "ErrorHandler.h"
 #include <map>
+
 
 #define ADD_TOKENNODE(name, tokenptr, father)	\
 {									\
@@ -10,12 +13,10 @@
 	father.addNode(subnode);		\
 }
 
-struct ArrayInfo
-{
-	int array_row;
-	int array_col;
-	int array_dim;
-};
+using namespace std;
+
+extern SymbolTableManager symbolTableManager;
+extern Token* curToken;
 
 class Parser
 {
@@ -29,7 +30,7 @@ public:
 	bool integer();
 	bool constDef();
 	bool constDeclare();
-	bool declareHead();
+	bool declareHead(STE* ste);
 	bool constant();
 	bool varDeclare();
 	bool varDef();
@@ -38,7 +39,7 @@ public:
 	bool funcWithReturn();
 	bool funcNoReturn();
 	bool comStatement();
-	bool paramList();
+	bool paramList(STE* ste);
 	bool mainFunc();
 	bool expression();
 	bool item();
@@ -50,21 +51,22 @@ public:
 	bool loopStatement();
 	bool step();
 	bool switchStatement();
-	bool caseList();
-	bool caseStatement();
+	bool caseList(bool ischar);
+	bool caseStatement(bool ischar);
 	bool defaultStatement();
 	bool callFuncWithReturn();
 	bool callFuncNoReturn();
-	bool valueParamList();
+	bool valueParamList(string funcName);
 	bool statementList();
 	bool scanfStatement();
 	bool printfStatement();
 	bool returnStatement();
 private:
-	Token* curToken;
 	AST_node subNode;
 	AST_node root;
 	ArrayInfo array;
-	map<string, bool> has_return;
+	map<string, bool> funcNames;
+	bool has_return;
+	bool isChar;
 };
 
