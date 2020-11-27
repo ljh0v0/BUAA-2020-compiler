@@ -1,0 +1,25 @@
+ch = 98
+func main :
+c = 97
+test = 1
+#t0=97+98
+test = #t0
+#t1=test+test
+test = #t1
+scan int test
+#t2 = test * test
+#t3=test+#t2
+print int #t3
+print nextline \n
+#t4 = test / test
+#t5 = test - #t4
+print int #t5
+print nextline \n
+#t6 = 0 - test
+print int #t6
+print nextline \n
+print string Hello, world
+print nextline \n
+print string Hello, world!
+print int test
+print nextline \n

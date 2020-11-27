@@ -1,0 +1,16 @@
+const int a = 1;
+int test;
+char ch = 'b';
+void main(){
+	int B;
+	char c = 'a';
+	test = 1;
+	tEst = 'a' + 'b';
+	Test = teSt + tesT;
+	scanf(teSt);
+	printf(tEst + test * test );
+	printf(test - test / test);
+	printf(-tesT);
+	printf("Hello, world");
+	printf("Hello, world!", test);
+}

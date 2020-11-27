@@ -1,0 +1,5 @@
+﻿  main.cpp
+  mipsCode.cpp
+c:\users\liujiahe\documents\documents\编译技术\compiler\compiler\compiler\mipscode.cpp(429,16): warning C4101: “isglobal”: 未引用的局部变量
+  正在生成代码...
+  compiler.vcxproj -> C:\Users\liujiahe\Documents\Documents\编译技术\compiler\compiler\x64\Debug\compiler.exe

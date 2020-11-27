@@ -1,0 +1,69 @@
+.data
+string_0: .asciiz "Hello, world"
+string_1: .asciiz "Hello, world!"
+nextline: .asciiz "\n"
+.text
+li $t0, 98
+sw $t0, 4($gp)
+j main
+main:
+move $fp, $sp
+addi $sp, $sp, -44
+li $s0, 97
+li $t0, 1
+sw $t0, 0($gp)
+li $t3, 195
+sw $t3, 0($gp)
+lw $t1, 0($gp)
+lw $t2, 0($gp)
+add $t3, $t1, $t2
+sw $t3, 0($gp)
+li $v0, 5
+syscall
+sw $v0, 0($gp)
+lw $t1, 0($gp)
+lw $t2, 0($gp)
+mul $t3, $t1, $t2
+lw $t1, 0($gp)
+add $t4, $t1, $t3
+move $a0, $t4
+li $v0, 1
+syscall
+la $a0, nextline
+li $v0, 4
+syscall
+lw $t1, 0($gp)
+lw $t2, 0($gp)
+div $t1, $t2
+mflo $t3
+lw $t1, 0($gp)
+sub $t4, $t1, $t3
+move $a0, $t4
+li $v0, 1
+syscall
+la $a0, nextline
+li $v0, 4
+syscall
+lw $t2, 0($gp)
+sub $t3, $0, $t2
+move $a0, $t3
+li $v0, 1
+syscall
+la $a0, nextline
+li $v0, 4
+syscall
+la $a0, string_0
+li $v0, 4
+syscall
+la $a0, nextline
+li $v0, 4
+syscall
+la $a0, string_1
+li $v0, 4
+syscall
+lw $a0, 0($gp)
+li $v0, 1
+syscall
+la $a0, nextline
+li $v0, 4
+syscall
