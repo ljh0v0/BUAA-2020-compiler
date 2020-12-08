@@ -1,0 +1,901 @@
+.data
+nextline: .asciiz "\n"
+.text
+j main
+myscanf:
+li $v0, 5
+syscall
+move $s0, $v0
+move $v0, $s0
+jr $ra
+jr $ra
+myprintf:
+lw $s0, 0($fp)
+move $a0, $s0
+li $v0, 1
+syscall
+la $a0, nextline
+li $v0, 4
+syscall
+jr $ra
+jr $ra
+checkrange:
+lw $s0, 0($fp)
+li $t1, 1073741824
+ble $s0, $t1, Label1
+Label0:
+addiu $t3, $s0, -1073741824
+move $s0, $t3
+li $t0, 1073741824
+blt $t0, $s0, Label0
+Label1:
+li $t0, 0
+ble $t0, $s0, Label3
+Label2:
+addiu $t4, $s0, 1073741824
+move $s0, $t4
+li $t1, 0
+blt $s0, $t1, Label2
+Label3:
+move $v0, $s0
+jr $ra
+jr $ra
+reduce:
+lw $s0, 0($fp)
+lw $s1, -4($fp)
+lw $s2, -8($fp)
+li $t1, 0
+bne $s0, $t1, Label4
+addu $t3, $s1, $s2
+sw $t3, 0($sp)
+addiu $sp, $sp, -36
+sw $ra, 4($sp)
+sw $fp, 8($sp)
+sw $t3, 12($sp)
+sw $s0, 16($sp)
+sw $s1, 20($sp)
+sw $s2, 24($sp)
+addiu $fp, $sp, 36
+jal checkrange
+lw $t3, 12($sp)
+lw $s0, 16($sp)
+lw $s1, 20($sp)
+lw $s2, 24($sp)
+lw $fp, 8($sp)
+lw $ra, 4($sp)
+addiu $sp, $sp, 36
+move $t4, $v0
+move $v0, $t4
+jr $ra
+Label4:
+li $t1, 1
+bne $s0, $t1, Label5
+li $s3, 0
+li $s4, 1
+li $t0, 1073741824
+ble $t0, $s4, Label7
+Label6:
+div $s1, $s4
+mflo $t5
+div $s1, $s4
+mflo $t6
+li $t2, 2
+div $t6, $t2
+mflo $t7
+li $t2, 2
+mul $t8, $t7, $t2
+subu $t9, $t5, $t8
+div $s2, $s4
+mflo $t0
+sw $t0, -48($fp)
+div $s2, $s4
+mflo $t0
+sw $t0, -52($fp)
+lw $t1, -52($fp)
+li $t2, 2
+div $t1, $t2
+mflo $t0
+sw $t0, -56($fp)
+lw $t1, -56($fp)
+li $t2, 2
+mul $t0, $t1, $t2
+sw $t0, -60($fp)
+lw $t1, -48($fp)
+lw $t2, -60($fp)
+subu $t0, $t1, $t2
+sw $t0, -64($fp)
+lw $t1, -64($fp)
+bne $t9, $t1, Label8
+li $t2, 2
+mul $t0, $s3, $t2
+sw $t0, -68($fp)
+lw $s3, -68($fp)
+j Label9
+Label8:
+li $t2, 2
+mul $t0, $s3, $t2
+sw $t0, -72($fp)
+lw $t1, -72($fp)
+addiu $t0, $t1, 1
+sw $t0, -76($fp)
+lw $s3, -76($fp)
+Label9:
+li $t2, 2
+mul $t0, $s4, $t2
+sw $t0, -80($fp)
+lw $s4, -80($fp)
+li $t1, 1073741824
+blt $s4, $t1, Label6
+Label7:
+move $v0, $s3
+jr $ra
+Label5:
+li $t1, 2
+bne $s0, $t1, Label10
+ble $s1, $s2, Label11
+move $v0, $s1
+jr $ra
+j Label12
+Label11:
+move $v0, $s2
+jr $ra
+Label12:
+Label10:
+li $t1, 3
+bne $s0, $t1, Label13
+li $s3, 0
+li $s4, 1
+li $t0, 1073741824
+ble $t0, $s4, Label15
+Label14:
+div $s1, $s4
+mflo $t0
+sw $t0, -84($fp)
+div $s1, $s4
+mflo $t0
+sw $t0, -88($fp)
+lw $t1, -88($fp)
+li $t2, 2
+div $t1, $t2
+mflo $t0
+sw $t0, -92($fp)
+lw $t1, -92($fp)
+li $t2, 2
+mul $t0, $t1, $t2
+sw $t0, -96($fp)
+lw $t1, -84($fp)
+lw $t2, -96($fp)
+subu $t0, $t1, $t2
+sw $t0, -100($fp)
+lw $t0, -100($fp)
+li $t1, 1
+bne $t0, $t1, Label16
+li $t2, 2
+mul $t0, $s3, $t2
+sw $t0, -104($fp)
+lw $t1, -104($fp)
+addiu $t0, $t1, 1
+sw $t0, -108($fp)
+lw $s3, -108($fp)
+j Label17
+Label16:
+div $s2, $s4
+mflo $t0
+sw $t0, -112($fp)
+div $s2, $s4
+mflo $t0
+sw $t0, -116($fp)
+lw $t1, -116($fp)
+li $t2, 2
+div $t1, $t2
+mflo $t0
+sw $t0, -120($fp)
+lw $t1, -120($fp)
+li $t2, 2
+mul $t0, $t1, $t2
+sw $t0, -124($fp)
+lw $t1, -112($fp)
+lw $t2, -124($fp)
+subu $t0, $t1, $t2
+sw $t0, -128($fp)
+lw $t0, -128($fp)
+li $t1, 1
+bne $t0, $t1, Label18
+li $t2, 2
+mul $t0, $s3, $t2
+sw $t0, -132($fp)
+lw $t1, -132($fp)
+addiu $t0, $t1, 1
+sw $t0, -136($fp)
+lw $s3, -136($fp)
+Label18:
+li $t2, 2
+mul $t0, $s3, $t2
+sw $t0, -140($fp)
+lw $s3, -140($fp)
+Label17:
+li $t2, 2
+mul $t0, $s4, $t2
+sw $t0, -144($fp)
+lw $s4, -144($fp)
+li $t1, 1073741824
+blt $s4, $t1, Label14
+Label15:
+move $v0, $s3
+jr $ra
+Label13:
+li $t1, 4
+bne $s0, $t1, Label19
+li $s3, 0
+li $s4, 1
+li $t0, 1073741824
+ble $t0, $s4, Label21
+Label20:
+div $s1, $s4
+mflo $t0
+sw $t0, -148($fp)
+div $s1, $s4
+mflo $t0
+sw $t0, -152($fp)
+lw $t1, -152($fp)
+li $t2, 2
+div $t1, $t2
+mflo $t0
+sw $t0, -156($fp)
+lw $t1, -156($fp)
+li $t2, 2
+mul $t0, $t1, $t2
+sw $t0, -160($fp)
+lw $t1, -148($fp)
+lw $t2, -160($fp)
+subu $t0, $t1, $t2
+sw $t0, -164($fp)
+lw $t0, -164($fp)
+li $t1, 1
+bne $t0, $t1, Label22
+div $s2, $s4
+mflo $t0
+sw $t0, -168($fp)
+div $s2, $s4
+mflo $t0
+sw $t0, -172($fp)
+lw $t1, -172($fp)
+li $t2, 2
+div $t1, $t2
+mflo $t0
+sw $t0, -176($fp)
+lw $t1, -176($fp)
+li $t2, 2
+mul $t0, $t1, $t2
+sw $t0, -180($fp)
+lw $t1, -168($fp)
+lw $t2, -180($fp)
+subu $t0, $t1, $t2
+sw $t0, -184($fp)
+lw $t0, -184($fp)
+li $t1, 1
+bne $t0, $t1, Label23
+li $t2, 2
+mul $t0, $s3, $t2
+sw $t0, -188($fp)
+lw $t1, -188($fp)
+addiu $t0, $t1, 1
+sw $t0, -192($fp)
+lw $s3, -192($fp)
+j Label24
+Label23:
+li $t2, 2
+mul $t0, $s3, $t2
+sw $t0, -196($fp)
+lw $s3, -196($fp)
+Label24:
+j Label25
+Label22:
+li $t2, 2
+mul $t0, $s3, $t2
+sw $t0, -200($fp)
+lw $s3, -200($fp)
+Label25:
+li $t2, 2
+mul $t0, $s4, $t2
+sw $t0, -204($fp)
+lw $s4, -204($fp)
+li $t1, 1073741824
+blt $s4, $t1, Label20
+Label21:
+move $v0, $s3
+jr $ra
+Label19:
+li $v0, 0
+jr $ra
+jr $ra
+getvalue:
+lw $s0, 0($fp)
+lw $s1, -4($fp)
+lw $s2, -8($fp)
+lw $s3, -12($fp)
+li $t0, 0
+ble $t0, $s2, Label26
+li $v0, 0
+jr $ra
+Label26:
+li $t0, 0
+ble $t0, $s3, Label27
+li $v0, 0
+jr $ra
+Label27:
+blt $s2, $s0, Label28
+li $v0, 0
+jr $ra
+Label28:
+blt $s3, $s1, Label29
+li $v0, 0
+jr $ra
+Label29:
+mul $t3, $s2, $s1
+addu $t4, $t3, $s3
+addiu $t2, $gp, 0
+sll $t1, $t4, 2
+addu $t2, $t2, $t1
+lw $t5, 0($t2)
+move $v0, $t5
+jr $ra
+jr $ra
+convn:
+lw $s0, 0($fp)
+lw $s1, -4($fp)
+lw $s2, -8($fp)
+lw $s3, -12($fp)
+li $s4, 0
+li $s5, 0
+li $s6, 1
+li $s7, 1
+li $t0, 1
+sw $t0, -44($fp)
+li $t0, 1
+sw $t0, -48($fp)
+li $t1, 1
+bne $s6, $t1, Label31
+Label30:
+li $s5, 0
+li $t1, 1
+bne $s7, $t1, Label33
+Label32:
+li $t0, 0
+sw $t0, -32($fp)
+li $t2, 2
+div $s3, $t2
+mflo $t3
+subu $t4, $s4, $t3
+sw $t4, -24($fp)
+lw $t0, -44($fp)
+li $t1, 1
+bne $t0, $t1, Label35
+Label34:
+li $t2, 2
+div $s3, $t2
+mflo $t5
+subu $t6, $s5, $t5
+sw $t6, -28($fp)
+lw $t0, -48($fp)
+li $t1, 1
+bne $t0, $t1, Label37
+Label36:
+lw $t0, -28($fp)
+sw $t0, -12($sp)
+lw $t0, -24($fp)
+sw $t0, -8($sp)
+sw $s2, -4($sp)
+sw $s1, 0($sp)
+addiu $sp, $sp, -84
+sw $ra, 4($sp)
+sw $fp, 8($sp)
+sw $t3, 12($sp)
+sw $t4, 16($sp)
+sw $t5, 20($sp)
+sw $t6, 24($sp)
+sw $s0, 28($sp)
+sw $s1, 32($sp)
+sw $s2, 36($sp)
+sw $s3, 40($sp)
+sw $s4, 44($sp)
+sw $s5, 48($sp)
+sw $s6, 52($sp)
+sw $s7, 56($sp)
+addiu $fp, $sp, 84
+jal getvalue
+lw $t3, 12($sp)
+lw $t4, 16($sp)
+lw $t5, 20($sp)
+lw $t6, 24($sp)
+lw $s0, 28($sp)
+lw $s1, 32($sp)
+lw $s2, 36($sp)
+lw $s3, 40($sp)
+lw $s4, 44($sp)
+lw $s5, 48($sp)
+lw $s6, 52($sp)
+lw $s7, 56($sp)
+lw $fp, 8($sp)
+lw $ra, 4($sp)
+addiu $sp, $sp, 84
+move $t7, $v0
+sw $t7, -8($sp)
+lw $t0, -32($fp)
+sw $t0, -4($sp)
+sw $s0, 0($sp)
+addiu $sp, $sp, -268
+sw $ra, 4($sp)
+sw $fp, 8($sp)
+sw $t3, 12($sp)
+sw $t4, 16($sp)
+sw $t5, 20($sp)
+sw $t6, 24($sp)
+sw $t7, 28($sp)
+sw $s0, 32($sp)
+sw $s1, 36($sp)
+sw $s2, 40($sp)
+sw $s3, 44($sp)
+sw $s4, 48($sp)
+sw $s5, 52($sp)
+sw $s6, 56($sp)
+sw $s7, 60($sp)
+addiu $fp, $sp, 268
+jal reduce
+lw $t3, 12($sp)
+lw $t4, 16($sp)
+lw $t5, 20($sp)
+lw $t6, 24($sp)
+lw $t7, 28($sp)
+lw $s0, 32($sp)
+lw $s1, 36($sp)
+lw $s2, 40($sp)
+lw $s3, 44($sp)
+lw $s4, 48($sp)
+lw $s5, 52($sp)
+lw $s6, 56($sp)
+lw $s7, 60($sp)
+lw $fp, 8($sp)
+lw $ra, 4($sp)
+addiu $sp, $sp, 268
+move $t8, $v0
+sw $t8, -32($fp)
+lw $t1, -28($fp)
+addiu $t9, $t1, 1
+sw $t9, -28($fp)
+li $t2, 2
+div $s3, $t2
+mflo $t0
+sw $t0, -80($fp)
+lw $t2, -80($fp)
+addu $t0, $s5, $t2
+sw $t0, -84($fp)
+lw $t0, -28($fp)
+lw $t1, -84($fp)
+blt $t0, $t1, Label38
+li $t0, 0
+sw $t0, -48($fp)
+Label38:
+lw $t0, -48($fp)
+li $t1, 1
+beq $t0, $t1, Label36
+Label37:
+li $t0, 1
+sw $t0, -48($fp)
+lw $t1, -24($fp)
+addiu $t0, $t1, 1
+sw $t0, -88($fp)
+lw $t0, -88($fp)
+sw $t0, -24($fp)
+li $t2, 2
+div $s3, $t2
+mflo $t0
+sw $t0, -92($fp)
+lw $t2, -92($fp)
+addu $t0, $s4, $t2
+sw $t0, -96($fp)
+lw $t0, -24($fp)
+lw $t1, -96($fp)
+blt $t0, $t1, Label39
+li $t0, 0
+sw $t0, -44($fp)
+Label39:
+lw $t0, -44($fp)
+li $t1, 1
+beq $t0, $t1, Label34
+Label35:
+li $t0, 1
+sw $t0, -44($fp)
+mul $t0, $s4, $s2
+sw $t0, -100($fp)
+lw $t1, -100($fp)
+addu $t0, $t1, $s5
+sw $t0, -104($fp)
+lw $t0, -104($fp)
+lw $t1, -32($fp)
+addiu $t2, $gp, 4000
+sll $t0, $t0, 2
+addu $t2, $t2, $t0
+sw $t1, 0($t2)
+addiu $t0, $s5, 1
+sw $t0, -108($fp)
+lw $s5, -108($fp)
+blt $s5, $s2, Label40
+li $s7, 0
+Label40:
+li $t1, 1
+beq $s7, $t1, Label32
+Label33:
+li $s7, 1
+addiu $t0, $s4, 1
+sw $t0, -112($fp)
+lw $s4, -112($fp)
+blt $s4, $s1, Label41
+li $s6, 0
+Label41:
+li $t1, 1
+beq $s6, $t1, Label30
+Label31:
+li $v0, 0
+jr $ra
+jr $ra
+mymemmove:
+lw $s0, 0($fp)
+li $s1, 0
+ble $s0, $s1, Label43
+Label42:
+addiu $t2, $gp, 4000
+sll $t1, $s1, 2
+addu $t2, $t2, $t1
+lw $t3, 0($t2)
+addiu $t2, $gp, 0
+sll $t0, $s1, 2
+addu $t2, $t2, $t0
+sw $t3, 0($t2)
+addiu $t4, $s1, 1
+move $s1, $t4
+blt $s1, $s0, Label42
+Label43:
+jr $ra
+main:
+move $fp, $sp
+addiu $sp, $sp, -100
+li $s0, 0
+addiu $sp, $sp, -16
+sw $ra, 4($sp)
+sw $fp, 8($sp)
+sw $s0, 12($sp)
+addiu $fp, $sp, 16
+jal myscanf
+lw $s0, 12($sp)
+lw $fp, 8($sp)
+lw $ra, 4($sp)
+addiu $sp, $sp, 16
+move $t3, $v0
+move $s1, $t3
+addiu $sp, $sp, -24
+sw $ra, 4($sp)
+sw $fp, 8($sp)
+sw $t3, 12($sp)
+sw $s0, 16($sp)
+sw $s1, 20($sp)
+addiu $fp, $sp, 24
+jal myscanf
+lw $t3, 12($sp)
+lw $s0, 16($sp)
+lw $s1, 20($sp)
+lw $fp, 8($sp)
+lw $ra, 4($sp)
+addiu $sp, $sp, 24
+move $t4, $v0
+move $s2, $t4
+addiu $sp, $sp, -32
+sw $ra, 4($sp)
+sw $fp, 8($sp)
+sw $t3, 12($sp)
+sw $t4, 16($sp)
+sw $s0, 20($sp)
+sw $s1, 24($sp)
+sw $s2, 28($sp)
+addiu $fp, $sp, 32
+jal myscanf
+lw $t3, 12($sp)
+lw $t4, 16($sp)
+lw $s0, 20($sp)
+lw $s1, 24($sp)
+lw $s2, 28($sp)
+lw $fp, 8($sp)
+lw $ra, 4($sp)
+addiu $sp, $sp, 32
+move $t5, $v0
+move $s3, $t5
+addiu $sp, $sp, -40
+sw $ra, 4($sp)
+sw $fp, 8($sp)
+sw $t3, 12($sp)
+sw $t4, 16($sp)
+sw $t5, 20($sp)
+sw $s0, 24($sp)
+sw $s1, 28($sp)
+sw $s2, 32($sp)
+sw $s3, 36($sp)
+addiu $fp, $sp, 40
+jal myscanf
+lw $t3, 12($sp)
+lw $t4, 16($sp)
+lw $t5, 20($sp)
+lw $s0, 24($sp)
+lw $s1, 28($sp)
+lw $s2, 32($sp)
+lw $s3, 36($sp)
+lw $fp, 8($sp)
+lw $ra, 4($sp)
+addiu $sp, $sp, 40
+move $t6, $v0
+move $s4, $t6
+ble $s4, $s0, Label45
+Label44:
+addiu $sp, $sp, -48
+sw $ra, 4($sp)
+sw $fp, 8($sp)
+sw $t3, 12($sp)
+sw $t4, 16($sp)
+sw $t5, 20($sp)
+sw $t6, 24($sp)
+sw $s0, 28($sp)
+sw $s1, 32($sp)
+sw $s2, 36($sp)
+sw $s3, 40($sp)
+sw $s4, 44($sp)
+addiu $fp, $sp, 48
+jal myscanf
+lw $t3, 12($sp)
+lw $t4, 16($sp)
+lw $t5, 20($sp)
+lw $t6, 24($sp)
+lw $s0, 28($sp)
+lw $s1, 32($sp)
+lw $s2, 36($sp)
+lw $s3, 40($sp)
+lw $s4, 44($sp)
+lw $fp, 8($sp)
+lw $ra, 4($sp)
+addiu $sp, $sp, 48
+move $t7, $v0
+addiu $t2, $gp, 0
+sll $t0, $s0, 2
+addu $t2, $t2, $t0
+sw $t7, 0($t2)
+addiu $t8, $s0, 1
+move $s0, $t8
+blt $s0, $s4, Label44
+Label45:
+addiu $sp, $sp, -56
+sw $ra, 4($sp)
+sw $fp, 8($sp)
+sw $t3, 12($sp)
+sw $t4, 16($sp)
+sw $t5, 20($sp)
+sw $t6, 24($sp)
+sw $t7, 28($sp)
+sw $t8, 32($sp)
+sw $s0, 36($sp)
+sw $s1, 40($sp)
+sw $s2, 44($sp)
+sw $s3, 48($sp)
+sw $s4, 52($sp)
+addiu $fp, $sp, 56
+jal myscanf
+lw $t3, 12($sp)
+lw $t4, 16($sp)
+lw $t5, 20($sp)
+lw $t6, 24($sp)
+lw $t7, 28($sp)
+lw $t8, 32($sp)
+lw $s0, 36($sp)
+lw $s1, 40($sp)
+lw $s2, 44($sp)
+lw $s3, 48($sp)
+lw $s4, 52($sp)
+lw $fp, 8($sp)
+lw $ra, 4($sp)
+addiu $sp, $sp, 56
+move $t9, $v0
+move $s5, $t9
+li $s0, 0
+ble $s5, $s0, Label47
+Label46:
+addiu $sp, $sp, -64
+sw $ra, 4($sp)
+sw $fp, 8($sp)
+sw $t3, 12($sp)
+sw $t4, 16($sp)
+sw $t5, 20($sp)
+sw $t6, 24($sp)
+sw $t7, 28($sp)
+sw $t8, 32($sp)
+sw $t9, 36($sp)
+sw $s0, 40($sp)
+sw $s1, 44($sp)
+sw $s2, 48($sp)
+sw $s3, 52($sp)
+sw $s4, 56($sp)
+sw $s5, 60($sp)
+addiu $fp, $sp, 64
+jal myscanf
+lw $t3, 12($sp)
+lw $t4, 16($sp)
+lw $t5, 20($sp)
+lw $t6, 24($sp)
+lw $t7, 28($sp)
+lw $t8, 32($sp)
+lw $t9, 36($sp)
+lw $s0, 40($sp)
+lw $s1, 44($sp)
+lw $s2, 48($sp)
+lw $s3, 52($sp)
+lw $s4, 56($sp)
+lw $s5, 60($sp)
+lw $fp, 8($sp)
+lw $ra, 4($sp)
+addiu $sp, $sp, 64
+sw $v0, -56($fp)
+lw $t1, -56($fp)
+addiu $t2, $gp, 8000
+sll $t0, $s0, 2
+addu $t2, $t2, $t0
+sw $t1, 0($t2)
+addiu $t0, $s0, 1
+sw $t0, -60($fp)
+lw $s0, -60($fp)
+blt $s0, $s5, Label46
+Label47:
+li $s0, 0
+ble $s5, $s0, Label49
+Label48:
+addiu $t2, $gp, 8000
+sll $t1, $s0, 2
+addu $t2, $t2, $t1
+lw $t0, 0($t2)
+sw $t0, -64($fp)
+sw $s1, -12($sp)
+sw $s3, -8($sp)
+sw $s2, -4($sp)
+lw $t0, -64($fp)
+sw $t0, 0($sp)
+addiu $sp, $sp, -176
+sw $ra, 4($sp)
+sw $fp, 8($sp)
+sw $t3, 12($sp)
+sw $t4, 16($sp)
+sw $t5, 20($sp)
+sw $t6, 24($sp)
+sw $t7, 28($sp)
+sw $t8, 32($sp)
+sw $t9, 36($sp)
+sw $s0, 40($sp)
+sw $s1, 44($sp)
+sw $s2, 48($sp)
+sw $s3, 52($sp)
+sw $s4, 56($sp)
+sw $s5, 60($sp)
+addiu $fp, $sp, 176
+jal convn
+lw $t3, 12($sp)
+lw $t4, 16($sp)
+lw $t5, 20($sp)
+lw $t6, 24($sp)
+lw $t7, 28($sp)
+lw $t8, 32($sp)
+lw $t9, 36($sp)
+lw $s0, 40($sp)
+lw $s1, 44($sp)
+lw $s2, 48($sp)
+lw $s3, 52($sp)
+lw $s4, 56($sp)
+lw $s5, 60($sp)
+lw $fp, 8($sp)
+lw $ra, 4($sp)
+addiu $sp, $sp, 176
+mul $t0, $s2, $s3
+sw $t0, -68($fp)
+lw $t0, -68($fp)
+sw $t0, 0($sp)
+addiu $sp, $sp, -76
+sw $ra, 4($sp)
+sw $fp, 8($sp)
+sw $t3, 12($sp)
+sw $t4, 16($sp)
+sw $t5, 20($sp)
+sw $t6, 24($sp)
+sw $t7, 28($sp)
+sw $t8, 32($sp)
+sw $t9, 36($sp)
+sw $s0, 40($sp)
+sw $s1, 44($sp)
+sw $s2, 48($sp)
+sw $s3, 52($sp)
+sw $s4, 56($sp)
+sw $s5, 60($sp)
+addiu $fp, $sp, 76
+jal mymemmove
+lw $t3, 12($sp)
+lw $t4, 16($sp)
+lw $t5, 20($sp)
+lw $t6, 24($sp)
+lw $t7, 28($sp)
+lw $t8, 32($sp)
+lw $t9, 36($sp)
+lw $s0, 40($sp)
+lw $s1, 44($sp)
+lw $s2, 48($sp)
+lw $s3, 52($sp)
+lw $s4, 56($sp)
+lw $s5, 60($sp)
+lw $fp, 8($sp)
+lw $ra, 4($sp)
+addiu $sp, $sp, 76
+addiu $t0, $s0, 1
+sw $t0, -72($fp)
+lw $s0, -72($fp)
+blt $s0, $s5, Label48
+Label49:
+li $s0, 0
+mul $t0, $s2, $s3
+sw $t0, -76($fp)
+lw $t0, -76($fp)
+ble $t0, $s0, Label51
+Label50:
+addiu $t2, $gp, 0
+sll $t1, $s0, 2
+addu $t2, $t2, $t1
+lw $t0, 0($t2)
+sw $t0, -80($fp)
+lw $t0, -80($fp)
+sw $t0, 0($sp)
+addiu $sp, $sp, -64
+sw $ra, 4($sp)
+sw $fp, 8($sp)
+sw $t3, 12($sp)
+sw $t4, 16($sp)
+sw $t5, 20($sp)
+sw $t6, 24($sp)
+sw $t7, 28($sp)
+sw $t8, 32($sp)
+sw $t9, 36($sp)
+sw $s0, 40($sp)
+sw $s1, 44($sp)
+sw $s2, 48($sp)
+sw $s3, 52($sp)
+sw $s4, 56($sp)
+sw $s5, 60($sp)
+addiu $fp, $sp, 64
+jal myprintf
+lw $t3, 12($sp)
+lw $t4, 16($sp)
+lw $t5, 20($sp)
+lw $t6, 24($sp)
+lw $t7, 28($sp)
+lw $t8, 32($sp)
+lw $t9, 36($sp)
+lw $s0, 40($sp)
+lw $s1, 44($sp)
+lw $s2, 48($sp)
+lw $s3, 52($sp)
+lw $s4, 56($sp)
+lw $s5, 60($sp)
+lw $fp, 8($sp)
+lw $ra, 4($sp)
+addiu $sp, $sp, 64
+addiu $t0, $s0, 1
+sw $t0, -84($fp)
+lw $s0, -84($fp)
+mul $t0, $s2, $s3
+sw $t0, -88($fp)
+lw $t1, -88($fp)
+blt $s0, $t1, Label50
+Label51:
+li $v0, 10
+syscall
+li $v0, 10
+syscall

@@ -1,0 +1,342 @@
+func myscanf :
+scan int n
+$v0 = n
+return
+endfunc
+func myprintf :
+param n
+print int n
+print nextline \n
+return
+endfunc
+func checkrange :
+param num
+goto Label1 if num <= 1073741824
+Label0 :
+#t0 = num - 1073741824
+num = #t0
+goto Label0 if 1073741824 < num
+Label1 :
+goto Label3 if 0 <= num
+Label2 :
+#t1=num+1073741824
+num = #t1
+goto Label2 if num < 0
+Label3 :
+$v0 = num
+return
+endfunc
+func reduce :
+param kernelid
+param x
+param y
+goto Label4 if kernelid != 0
+#t2=x+y
+push param #t2
+call func checkrange
+#t3 = $v0
+$v0 = #t3
+return
+Label4 :
+goto Label5 if kernelid != 1
+ret = 0
+i = 1
+goto Label7 if 1073741824 <= i
+Label6 :
+#t4 = x / i
+#t5 = x / i
+#t6 = #t5 / 2
+#t7 = #t6 * 2
+#t8 = #t4 - #t7
+#t9 = y / i
+#t10 = y / i
+#t11 = #t10 / 2
+#t12 = #t11 * 2
+#t13 = #t9 - #t12
+goto Label8 if #t8 != #t13
+#t14 = ret * 2
+ret = #t14
+goto Label9
+Label8 :
+#t15 = ret * 2
+#t16=#t15+1
+ret = #t16
+Label9 :
+#t17 = i * 2
+i = #t17
+goto Label6 if i < 1073741824
+Label7 :
+$v0 = ret
+return
+Label5 :
+goto Label10 if kernelid != 2
+goto Label11 if x <= y
+$v0 = x
+return
+goto Label12
+Label11 :
+$v0 = y
+return
+Label12 :
+Label10 :
+goto Label13 if kernelid != 3
+ret = 0
+i = 1
+goto Label15 if 1073741824 <= i
+Label14 :
+#t18 = x / i
+#t19 = x / i
+#t20 = #t19 / 2
+#t21 = #t20 * 2
+#t22 = #t18 - #t21
+goto Label16 if #t22 != 1
+#t23 = ret * 2
+#t24=#t23+1
+ret = #t24
+goto Label17
+Label16 :
+#t25 = y / i
+#t26 = y / i
+#t27 = #t26 / 2
+#t28 = #t27 * 2
+#t29 = #t25 - #t28
+goto Label18 if #t29 != 1
+#t30 = ret * 2
+#t31=#t30+1
+ret = #t31
+Label18 :
+#t32 = ret * 2
+ret = #t32
+Label17 :
+#t33 = i * 2
+i = #t33
+goto Label14 if i < 1073741824
+Label15 :
+$v0 = ret
+return
+Label13 :
+goto Label19 if kernelid != 4
+ret = 0
+i = 1
+goto Label21 if 1073741824 <= i
+Label20 :
+#t34 = x / i
+#t35 = x / i
+#t36 = #t35 / 2
+#t37 = #t36 * 2
+#t38 = #t34 - #t37
+goto Label22 if #t38 != 1
+#t39 = y / i
+#t40 = y / i
+#t41 = #t40 / 2
+#t42 = #t41 * 2
+#t43 = #t39 - #t42
+goto Label23 if #t43 != 1
+#t44 = ret * 2
+#t45=#t44+1
+ret = #t45
+goto Label24
+Label23 :
+#t46 = ret * 2
+ret = #t46
+Label24 :
+goto Label25
+Label22 :
+#t47 = ret * 2
+ret = #t47
+Label25 :
+#t48 = i * 2
+i = #t48
+goto Label20 if i < 1073741824
+Label21 :
+$v0 = ret
+return
+Label19 :
+$v0 = 0
+return
+endfunc
+func getvalue :
+param n
+param m
+param x
+param y
+goto Label26 if 0 <= x
+$v0 = 0
+return
+Label26 :
+goto Label27 if 0 <= y
+$v0 = 0
+return
+Label27 :
+goto Label28 if x < n
+$v0 = 0
+return
+Label28 :
+goto Label29 if y < m
+$v0 = 0
+return
+Label29 :
+#t49 = x * m
+#t50=#t49+y
+#t51 = a[#t50]
+$v0 = #t51
+return
+endfunc
+func convn :
+param kernelid
+param n
+param m
+param c
+i = 0
+j = 0
+flag1 = 1
+flag2 = 1
+flag3 = 1
+flag4 = 1
+goto Label31 if flag1 != 1
+Label30 :
+j = 0
+goto Label33 if flag2 != 1
+Label32 :
+curr = 0
+#t52 = c / 2
+#t53 = i - #t52
+x = #t53
+goto Label35 if flag3 != 1
+Label34 :
+#t54 = c / 2
+#t55 = j - #t54
+y = #t55
+goto Label37 if flag4 != 1
+Label36 :
+push param kernelid
+push param curr
+push param n
+push param m
+push param x
+push param y
+call func getvalue
+#t56 = $v0
+push param #t56
+call func reduce
+#t57 = $v0
+curr = #t57
+#t58=y+1
+y = #t58
+#t59 = c / 2
+#t60=j+#t59
+goto Label38 if y < #t60
+flag4 = 0
+Label38 :
+goto Label36 if flag4 = 1
+Label37 :
+flag4 = 1
+#t61=x+1
+x = #t61
+#t62 = c / 2
+#t63=i+#t62
+goto Label39 if x < #t63
+flag3 = 0
+Label39 :
+goto Label34 if flag3 = 1
+Label35 :
+flag3 = 1
+#t64 = i * m
+#t65=#t64+j
+b[#t65] = curr
+#t66=j+1
+j = #t66
+goto Label40 if j < m
+flag2 = 0
+Label40 :
+goto Label32 if flag2 = 1
+Label33 :
+flag2 = 1
+#t67=i+1
+i = #t67
+goto Label41 if i < n
+flag1 = 0
+Label41 :
+goto Label30 if flag1 = 1
+Label31 :
+$v0 = 0
+return
+endfunc
+func mymemmove :
+param n
+i = 0
+goto Label43 if n <= i
+Label42 :
+#t68 = b[i]
+a[i] = #t68
+#t69=i+1
+i = #t69
+goto Label42 if i < n
+Label43 :
+endfunc
+func main :
+i = 0
+call func myscanf
+#t70 = $v0
+c = #t70
+call func myscanf
+#t71 = $v0
+n = #t71
+call func myscanf
+#t72 = $v0
+m = #t72
+call func myscanf
+#t73 = $v0
+arrlen = #t73
+goto Label45 if arrlen <= i
+Label44 :
+call func myscanf
+#t74 = $v0
+a[i] = #t74
+#t75=i+1
+i = #t75
+goto Label44 if i < arrlen
+Label45 :
+call func myscanf
+#t76 = $v0
+task = #t76
+i = 0
+goto Label47 if task <= i
+Label46 :
+call func myscanf
+#t77 = $v0
+kernelid[i] = #t77
+#t78=i+1
+i = #t78
+goto Label46 if i < task
+Label47 :
+i = 0
+goto Label49 if task <= i
+Label48 :
+#t79 = kernelid[i]
+push param #t79
+push param n
+push param m
+push param c
+call func convn
+#t80 = n * m
+push param #t80
+call func mymemmove
+#t81=i+1
+i = #t81
+goto Label48 if i < task
+Label49 :
+i = 0
+#t82 = n * m
+goto Label51 if #t82 <= i
+Label50 :
+#t83 = a[i]
+push param #t83
+call func myprintf
+#t84=i+1
+i = #t84
+#t85 = n * m
+goto Label50 if i < #t85
+Label51 :
+exit
+exit
